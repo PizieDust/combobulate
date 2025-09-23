@@ -261,9 +261,8 @@
                     :position any))
           :selector
           (:choose parent
-                    :match-children ((:only ("constructor_declaration"))
-                                    ))
-          :exclude-nodes ("|"))
+                    :match-children t)
+          )
                 
 
          (:activation-nodes

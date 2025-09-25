@@ -5,7 +5,6 @@ type role = Admin of user | Guest
 let is_admin = function
   | Admin _ -> true
   | Guest -> false
-  | _ -> false
 
 let classify_char = function
   | 'a' | 'e' | 'i' | 'o' | 'u' as vowel -> Printf.printf "%c is a vowel\n" vowel 
@@ -39,6 +38,7 @@ let get_array_header = function
   | [| x |] -> Printf.sprintf "single element: %d" x
   | [| x; y; z |] -> Printf.sprintf "three elements: %d, %d, %d" x y z
   | [| h; _ |] -> Printf.sprintf "header: %d" h
+  | _ -> "long array"
 
 let process_int_list (l: int list) =
   match l with
@@ -48,17 +48,15 @@ let process_int_list (l: int list) =
 let force_lazy_int = function
   | lazy (Some x) -> x
   | lazy None -> 0
-  | lazy _ -> -1
 
 let handle_exception = function
-  | exception Not_found -> "Resource not found"
-  | exception (Invalid_argument msg) -> "Invalid argument: " ^ msg
+  | Not_found -> "Resource not found"
+  | Invalid_argument msg -> "Invalid argument: " ^ msg
+  | _ -> "Unknown exception"
 
 module type ID = sig val id : int end
 
 let get_module_id (module M : ID) = M.id 
-
-let get_untyped_module_id (module M) = "untyped" 
 
 let get_list_head_with_open = function
   | List.[] -> None
@@ -66,9 +64,6 @@ let get_list_head_with_open = function
 
 class type logger = object method log : string -> unit end
 
-let log_message (#logger as l) msg =
+let log_message (l : #logger) msg =
   l#log msg
 
-let process_payload = function
-  | [%payload? (x, y)] -> x + y
-  | _ -> 0

@@ -348,7 +348,7 @@
                     :match-children t))
 
         (:activation-nodes
-            ((:nodes ( "attribute" "attribute_id" "attribute_payload" )))
+            ((:nodes ( "attribute" "floating_attribute" "attribute_id" "attribute_payload" )))
           :selector
           (:choose node
                     :match-children t))
@@ -360,7 +360,7 @@
                     :match-children t))
 
         (:activation-nodes
-            ((:nodes ( "method_specification" "method_name" )))
+            ((:nodes ( "method_specification" "method_name" "inheritance_specification" "instantiated_class_type" "instance_variable_specification" "type_parameter_constraint" )))
           :selector
           (:choose node
                     :match-children t))

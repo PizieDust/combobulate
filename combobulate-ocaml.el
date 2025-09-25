@@ -115,7 +115,7 @@
                     "type_binding"
                     "record_declaration"
                     "polymorphic_variant_type" 
-                    "type_constructor_path")))
+                    "type_constructor_path" "constructor_name")))
           :selector (:choose node :match-children t))
 
           (:activation-nodes
@@ -366,7 +366,7 @@
                     :match-children t))
 
         (:activation-nodes
-            ((:nodes ( "record_declaration" "field_declaration" )))
+            ((:nodes ( "record_declaration" "field_declaration" "variant_declaration" "constructor_declaration" )))
           :selector
           (:choose node
                     :match-children t))

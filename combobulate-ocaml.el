@@ -212,12 +212,6 @@
          ;; Instead of typing out all possible node types that you want to
          ;; navigate by, it's often easier to use their common parent node and
          ;; ask Combobulate to give you all the node types that can appear in it:
-
-         (:activation-nodes
-            ((:nodes ( "method_specification" "inheritance_specification" "instance_variable_specification" "type_parameter_constraint" "floating_attribute" "type_variable")))
-          :selector
-          (:choose node
-                    :match-siblings t))
          
          (:activation-nodes
             ((:nodes ( "type_constructor_path" "type_constructor") :has-parent ("constructed_type")))
@@ -226,9 +220,9 @@
                     :match-siblings t))
 
          (:activation-nodes
-            ((:nodes ( "value_definition" "value_path" "number")))
+            ((:nodes ("value_definition" "value_path" "number" "attribute" "attribute_id" "attribute_payload" "infix_expression" "and_operator" "rel_operator" "mult_operator" "method_specification" "inheritance_specification" "instance_variable_specification" "type_parameter_constraint" "floating_attribute" "type_variable" "match_case" "type_definition" "exception_definition" "class_type_definition" "class_definition" "module_type_definition" "module_definition" "let_binding" "field_declaration" "constructor_declaration")))
           :selector
-          (:choose parent
+          (:choose node
                     :match-siblings t))
 
          (:activation-nodes
@@ -236,40 +230,12 @@
           :selector
           (:choose node
                     :match-children t))
-
-         (:activation-nodes
-            ((:nodes ( "attribute" "attribute_id" "attribute_payload")))
+        
+        (:activation-nodes
+            ((:nodes ( "match_case" "record_pattern" "guard" "infix_expression" ) :has-parent ("function_expression")))
           :selector
           (:choose node
                     :match-siblings t))
-
-         (:activation-nodes
-            ((:nodes ( "infix_expression" "and_operator" "rel_operator" "mult_operator" )))
-          :selector
-          (:choose node
-                    :match-siblings t))
-
-         (:activation-nodes
-            ((:nodes ( "match_case" )))
-          :selector
-          (:choose parent
-                    :match-children t))
-
-         (:activation-nodes
-          ((:nodes ("field_declaration"
-                    "field_name"
-                    ) :has-parent ("record_declaration")))
-          :selector (:choose parent :match-children t))
-
-         (:activation-nodes
-            ((:nodes ("constructor_declaration" "constructor_name")
-                    :has-parent ("variant_declaration")
-                    :position any))
-          :selector
-          (:choose parent
-                    :match-children t)
-          )
-                
 
          (:activation-nodes
           ((:nodes ("module_parameter")
@@ -336,12 +302,6 @@
        '(
 
         (:activation-nodes
-            ((:nodes ("let_binding") :has-parent ("value_definition")) )
-            :selector (:choose
-                      node
-                      :match-children t))
-
-        (:activation-nodes
             ((:nodes ( "expression_item" "let_expression" "value_definition" )))
           :selector
           (:choose node
@@ -354,11 +314,35 @@
                     :match-children t))
 
         (:activation-nodes
+            ((:nodes ( "match_case" "guard" "value_path" ) :has-parent ("match_expression")))
+          :selector
+          (:choose parent
+                    :match-children t))
+
+        (:activation-nodes
+            ((:nodes ( "parameter" "match_expression" ) :has-parent ("let_binding")))
+          :selector
+          (:choose parent
+                    :match-children t))
+
+        (:activation-nodes
             ((:nodes ( "match_case" "guard" "function_expression" )))
           :selector
           (:choose node
                     :match-children t))
 
+        (:activation-nodes
+            ((:nodes ("let_binding") :has-parent ("value_definition")) )
+            :selector (:choose
+                      node
+                      :match-children t))
+
+        (:activation-nodes
+          ((:nodes ( "method_specification" "method_name" "inheritance_specification" "instantiated_class_type" "instance_variable_specification" "type_parameter_constraint" "record_declaration" "field_declaration" "variant_declaration" "constructor_declaration" "set_expression" "infix_expression" ) :has-ancestor ("let_binding")))
+        :selector
+        (:choose node
+                  :match-children t))
+                  
         (:activation-nodes
             ((:nodes ( "method_specification" "method_name" "inheritance_specification" "instantiated_class_type" "instance_variable_specification" "type_parameter_constraint" )))
           :selector
@@ -464,14 +448,14 @@
          ))
     )))
 
-(defun combobulate-ocaml-setup (_))
-
 (define-combobulate-language
  :name ocaml
  :language ocaml
- :major-modes (ocaml-ts-mode neocaml-mode tuareg-mode) ; Only work for experimental tree-sitter modes.
+ :major-modes (ocaml-ts-mode tuareg-mode) ; Only work for experimental tree-sitter modes.
  :custom combobulate-ocaml-definitions
  :setup-fn combobulate-ocaml-setup)
+
+(defun combobulate-ocaml-setup (_))
 
 ;; Originally had MLI files in their own setup, since they're simpler (less constructors) and
 ;; use a different tree-sitter grammar.

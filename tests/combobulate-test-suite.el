@@ -288,7 +288,7 @@ doesn't exist."
   (save-window-excursion
     (save-excursion
       (let* ((auto-mode-alist (append auto-mode-alist
-                                      '(("\\.go\\'" . go-ts-mode))))
+                                      '(("\\.go\\'" . go-ts-mode)("\\.ml\\'" . tuareg-mode))))
              ;; required to ensure the right major mode is chosen.
              (major-mode-remap-alist '((python-mode . python-ts-mode)
                                        (css-mode . css-ts-mode)
@@ -301,7 +301,9 @@ doesn't exist."
                                        (json-mode . json-ts-mode)
                                        (html-mode . html-ts-mode)
                                        (mhtml-mode . html-ts-mode)
-                                       (js-json-mode . json-ts-mode)))
+                                       (js-json-mode . json-ts-mode)
+                                       (ocaml-ts-mode . tuareg-mode)
+                                       ))
              (combobulate-flash-node nil)
              (target-fn (concat (oref obj target-dir) (format "test-%s.gen.el" (oref obj collection-name))))
              (current-directory default-directory)

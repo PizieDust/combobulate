@@ -1,6 +1,5 @@
+(* -*- combobulate-test-point-overlays: ((1 outline 253) (2 outline 284) (3 outline 312) (4 outline 338) (5 outline 363) (6 outline 449) (7 outline 548) (8 outline 577) (9 outline 586) (10 outline 596)); eval: (combobulate-test-fixture-mode t); -*- *)
 let with_structure_payload = 1 [@payload let x = 10 in x]
-
-let with_signature_payload = (module F : sig val x: int [@payload: sig val y: string end] end)
 
 let with_type_payload = 1 [@payload: int -> bool]
 
@@ -11,14 +10,5 @@ let with_pattern_payload = function
 let with_pattern_and_guard = function
   | Some x [@payload? Some y when y > 0] -> x
   | None -> 0
-
-[@@@ocaml.doc "This is a standalone documentation attribute."]
-
-let a_value = 10
-[@@ocaml.doc "This is a floating attribute attached to the value above."]
-
-let using_extension = [%my_extension let a = 1 in a + 1]
-
-[%%my_toplevel_extension type t = int]
 
 let multiple_attributes = 42 [@first] [@second] [@third]

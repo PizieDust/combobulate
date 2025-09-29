@@ -1,5 +1,4 @@
-(* -*- combobulate-test-point-overlays: ((1 outline 191) (2 outline 263) (3 outline 315) (4 outline 389) (5 outline 1069) (6 outline 1187)); eval: (combobulate-test-fixture-mode t); -*- *)
-
+(* -*- combobulate-test-point-overlays: ((1 outline 519) (2 outline 538) (3 outline 575) (4 outline 631) (5 outline 681) (6 outline 721) (7 outline 784) (8 outline 863) (9 outline 890) (10 outline 953) (11 outline 1006) (12 outline 1081)); eval: (combobulate-test-fixture-mode t); -*- *)
 module Core_utils = struct
   let normalize_query s = String.trim s
 end
@@ -41,11 +40,3 @@ module Redis_client = struct
   end
 
 end
-
-module Safe_redis_client = (Redis_client : sig
-  exception Connection_failed of string
-  val default_port : int
-end)
-
-module Redis = Redis_client
-

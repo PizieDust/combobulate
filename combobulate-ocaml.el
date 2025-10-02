@@ -39,120 +39,120 @@
   "Pretty printer for OCaml nodes"      ; TODO Fill this in
   default-name)
 
-(eval-and-compile
-    ;; Define combobulate support for *.mli files
-  (defconst combobulate-ocaml-interface-definitions
-    '((context-nodes
-       '("false" "true" "number" "class_name" "value_name" "module_type_name"))
+;; (eval-and-compile
+;;     ;; Define combobulate support for *.mli files
+;;   (defconst combobulate-ocaml-interface-definitions
+;;     '((context-nodes
+;;        '("false" "true" "number" "class_name" "value_name" "module_type_name"))
 
-      ;; The function to use to indent a region. Defaults to indent-region which
-      ;; is fine if you're not using a whitespace-sensitive language.
-      (envelope-indent-region-function #'indent-region)
+;;       ;; The function to use to indent a region. Defaults to indent-region which
+;;       ;; is fine if you're not using a whitespace-sensitive language.
+;;       (envelope-indent-region-function #'indent-region)
 
-      ;; You can pretty print the display of node names in many places in
-      ;; Combobulate. Use your own function here to do this.
-      (pretty-print-node-name-function #'combobulate-ocaml-pretty-print-node-name)
+;;       ;; You can pretty print the display of node names in many places in
+;;       ;; Combobulate. Use your own function here to do this.
+;;       (pretty-print-node-name-function #'combobulate-ocaml-pretty-print-node-name)
 
-      ;; Plausible separators between items, probably comma and semi-colon?
-      (plausible-separators '(";" ","))
+;;       ;; Plausible separators between items, probably comma and semi-colon?
+;;       (plausible-separators '(";" ","))
 
-      ;; This is a list of procedures that determine what a defun is.
-      ;; In OCaml it is any _definition node. Select the defun using C-M-h
-      (procedures-defun
-       '((:activation-nodes ((:nodes ("open_module"
-                                      "type_definition"
-                                      "value_specification"
-                                      "exception_definition"
-                                      "module_definition"))))))
+;;       ;; This is a list of procedures that determine what a defun is.
+;;       ;; In OCaml it is any _definition node. Select the defun using C-M-h
+;;       (procedures-defun
+;;        '((:activation-nodes ((:nodes ("open_module"
+;;                                       "type_definition"
+;;                                       "value_specification"
+;;                                       "exception_definition"
+;;                                       "module_definition"))))))
 
-      ;; Logical navigation is bound to M-a and M-e. These commands move to the
-      ;; next logical node after or before point. It defaults to all possible nodes
-      ;; types, and this is usually the right default.
-      (procedures-logical
-       '((:activation-nodes ((:nodes (all))))))
+;;       ;; Logical navigation is bound to M-a and M-e. These commands move to the
+;;       ;; next logical node after or before point. It defaults to all possible nodes
+;;       ;; types, and this is usually the right default.
+;;       (procedures-logical
+;;        '((:activation-nodes ((:nodes (all))))))
 
-      ;; Sibling navigation really means picking the right siblings as point will
-      ;; often intersect many nodes, each having its own siblings. Sibling navigation
-      ;; is essential to get right and it must work consistently and everywhere.
-      ;; You navigate by siblings with C-M-n and C-M-p.
-      (procedures-sibling
-       '(
-         ;; Instead of typing out all possible node types that you want to
-         ;; navigate by, it's often easier to use their common parent node and
-         ;; ask Combobulate to give you all the node types that can appear in it:
+;;       ;; Sibling navigation really means picking the right siblings as point will
+;;       ;; often intersect many nodes, each having its own siblings. Sibling navigation
+;;       ;; is essential to get right and it must work consistently and everywhere.
+;;       ;; You navigate by siblings with C-M-n and C-M-p.
+;;       (procedures-sibling
+;;        '(
+;;          ;; Instead of typing out all possible node types that you want to
+;;          ;; navigate by, it's often easier to use their common parent node and
+;;          ;; ask Combobulate to give you all the node types that can appear in it:
 
-         (:activation-nodes
-          ((:nodes ("constructor_declaration" "constructor_name")
-                  :has-parent ("variant_declaration")
-                  :position any))
-        :selector
-        (:choose parent
-                  :match-children ((:only ("constructor_declaration"))
-                                  (:discard-rules ("|")))))
-
-        
-
-         ;; This should be equivalent to listing everything in "compilation_unit"
-         (:activation-nodes
-          ((:nodes ((rule "compilation_unit"))
-                   :position at
-                   :has-parent ("compilation_unit")))
-          :selector (:choose parent :match-children t))
-
-         ))
-
-      ;; This is a list of procedures that determine the parent-child relationship
-      ;; between nodes. Specifically C-M-d and C-M-u.
-      (procedures-hierarchy
-       '(
-         ;; (type_definition type
-         ;;   (type_binding name: (type_constructor) =
-         ;;    body:
-         ;; either record_declaration, type alias or some variant_type
-
-         (:activation-nodes
-          ((:nodes ("type_definition"
-                    "type_binding"
-                    "record_declaration"
-                    "polymorphic_variant_type" 
-                    "type_constructor_path" "constructor_name")))
-          :selector (:choose node :match-children t))
-
-          (:activation-nodes
-            ((:nodes ("module_definition" "module_binding" "module_name")))
-          :selector
-          (:choose node
-                    :match-children t))
-
-          (:activation-nodes
-            ((:nodes ("structure" "signature")
-                    :has-parent ("functor")
-                    :position at))
-          :selector (:choose parent :match-children t))
-
-         ;; (module_definition module
-         ;;   (module_binding name: (module_name) :
-         ;;     (signature sig
-         ;;       (value_specification val (value_name) :
-         ;; -> Repeated value_specifications or type_specifications
-
-         (:activation-nodes
-            ((:nodes ("module_definition" "module_binding" "module_name")))
-          :selector
-          (:choose node
-                    :match-children t))
+;;          (:activation-nodes
+;;           ((:nodes ("constructor_declaration" "constructor_name")
+;;                   :has-parent ("variant_declaration")
+;;                   :position any))
+;;         :selector
+;;         (:choose parent
+;;                   :match-children ((:only ("constructor_declaration"))
+;;                                   (:discard-rules ("|")))))
 
 
-          (:activation-nodes
-          ((:nodes ("signature")))
-          :selector (:choose node :match-children ((:discard-rules ("sig" "end")))))
 
-         ;; This should be equivalent to listing everything in "compilation_unit"
-         (:activation-nodes
-          ((:nodes ("compilation_unit") :position at))
-          :selector (:choose node :match-children t))
+;;          ;; This should be equivalent to listing everything in "compilation_unit"
+;;          (:activation-nodes
+;;           ((:nodes ((rule "compilation_unit"))
+;;                    :position at
+;;                    :has-parent ("compilation_unit")))
+;;           :selector (:choose parent :match-children t))
 
-         )))))
+;;          ))
+
+;;       ;; This is a list of procedures that determine the parent-child relationship
+;;       ;; between nodes. Specifically C-M-d and C-M-u.
+;;       (procedures-hierarchy
+;;        '(
+;;          ;; (type_definition type
+;;          ;;   (type_binding name: (type_constructor) =
+;;          ;;    body:
+;;          ;; either record_declaration, type alias or some variant_type
+
+;;          (:activation-nodes
+;;           ((:nodes ("type_definition"
+;;                     "type_binding"
+;;                     "record_declaration"
+;;                     "polymorphic_variant_type"
+;;                     "type_constructor_path" "constructor_name")))
+;;           :selector (:choose node :match-children t))
+
+;;           (:activation-nodes
+;;             ((:nodes ("module_definition" "module_binding" "module_name")))
+;;           :selector
+;;           (:choose node
+;;                     :match-children t))
+
+;;           (:activation-nodes
+;;             ((:nodes ("structure" "signature")
+;;                     :has-parent ("functor")
+;;                     :position at))
+;;           :selector (:choose parent :match-children t))
+
+;;          ;; (module_definition module
+;;          ;;   (module_binding name: (module_name) :
+;;          ;;     (signature sig
+;;          ;;       (value_specification val (value_name) :
+;;          ;; -> Repeated value_specifications or type_specifications
+
+;;          (:activation-nodes
+;;             ((:nodes ("module_definition" "module_binding" "module_name")))
+;;           :selector
+;;           (:choose node
+;;                     :match-children t))
+
+
+;;           (:activation-nodes
+;;           ((:nodes ("signature")))
+;;           :selector (:choose node :match-children ((:discard-rules ("sig" "end")))))
+
+;;          ;; This should be equivalent to listing everything in "compilation_unit"
+;;          (:activation-nodes
+;;           ((:nodes ("compilation_unit") :position at))
+;;           :selector (:choose node :match-children t))
+
+;;          )))))
 
 (eval-and-compile
 
@@ -212,27 +212,34 @@
          ;; Instead of typing out all possible node types that you want to
          ;; navigate by, it's often easier to use their common parent node and
          ;; ask Combobulate to give you all the node types that can appear in it:
-         
+
          (:activation-nodes
-            ((:nodes ( "type_constructor_path" "type_constructor") :has-parent ("constructed_type")))
+          ((:nodes ( "type_constructor_path" "type_constructor")
+                   :has-parent ("constructed_type")))
           :selector
           (:choose node
                     :match-siblings t))
 
          (:activation-nodes
-            ((:nodes ("value_definition" "value_path" "number" "attribute" "attribute_id" "attribute_payload" "infix_expression" "and_operator" "rel_operator" "mult_operator" "method_specification" "inheritance_specification" "instance_variable_specification" "type_parameter_constraint" "floating_attribute" "type_variable" "match_case" "type_definition" "exception_definition" "class_type_definition" "class_definition" "module_type_definition" "module_definition" "let_binding" "field_declaration" "constructor_declaration")))
-          :selector
-          (:choose node
-                    :match-siblings t))
+          ((:nodes ("value_definition" "value_path" "number" "attribute" "attribute_id" "attribute_payload"
+                    "infix_expression" "and_operator" "rel_operator" "mult_operator" "method_specification"
+                    "inheritance_specification" "instance_variable_specification" "type_parameter_constraint"
+                    "floating_attribute" "type_variable" "match_case" "type_definition" "exception_definition"
+                    "class_type_definition" "class_definition" "module_type_definition" "module_definition"
+                    "let_binding" "field_declaration" "constructor_declaration")))
+            :selector
+            (:choose node
+                     :match-siblings t))
 
          (:activation-nodes
-            ((:nodes ( "let_expressions")))
+          ((:nodes ( "let_expressions")))
           :selector
           (:choose node
                     :match-children t))
-        
+
         (:activation-nodes
-            ((:nodes ( "match_case" "record_pattern" "guard" "infix_expression" ) :has-parent ("function_expression")))
+         ((:nodes ( "match_case" "record_pattern" "guard" "infix_expression" )
+                  :has-parent ("function_expression")))
           :selector
           (:choose node
                     :match-siblings t))
@@ -338,13 +345,17 @@
                       :match-children t))
 
         (:activation-nodes
-          ((:nodes ( "method_specification" "method_name" "inheritance_specification" "instantiated_class_type" "instance_variable_specification" "type_parameter_constraint" "record_declaration" "field_declaration" "variant_declaration" "constructor_declaration" "set_expression" "infix_expression" ) :has-ancestor ("let_binding")))
+         ((:nodes ( "method_specification" "method_name" "inheritance_specification" "instantiated_class_type"
+                    "instance_variable_specification" "type_parameter_constraint" "record_declaration"
+                    "field_declaration" "variant_declaration" "constructor_declaration" "set_expression"
+                    "infix_expression" ) :has-ancestor ("let_binding")))
         :selector
         (:choose node
-                  :match-children t))
-                  
+                 :match-children t))
+
         (:activation-nodes
-            ((:nodes ( "method_specification" "method_name" "inheritance_specification" "instantiated_class_type" "instance_variable_specification" "type_parameter_constraint" )))
+         ((:nodes ( "method_specification" "method_name" "inheritance_specification" "instantiated_class_type"
+                    "instance_variable_specification" "type_parameter_constraint" )))
           :selector
           (:choose node
                     :match-children t))
@@ -362,7 +373,8 @@
                      :match-children t))
 
          (:activation-nodes
-          ((:nodes ("class_definition" "class_type_definition" "class_binding" "object_expression" "method_definition" "class_type_binding" "class_type_name" "class_body_type" "instance_variable_definition" )))
+          ((:nodes ("class_definition" "class_type_definition" "class_binding" "object_expression" "method_definition"
+                    "class_type_binding" "class_type_name" "class_body_type" "instance_variable_definition" )))
           :selector (:choose
                      node
                      :match-children t))
@@ -378,7 +390,7 @@
           :selector (:choose
                      node
                      :match-children t))
-        
+
         (:activation-nodes
         ((:nodes ("module_binding" "module_name") :has-ancestor ("functor")) )
         :selector (:choose

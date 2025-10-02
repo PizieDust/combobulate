@@ -1,6 +1,5 @@
 FROM ubuntu:24.04 AS base
 
-ENV VERSION=29.1
 # We assume the git repo's cloned outside and copied in, instead of
 # cloning it in here. But that works, too.
 WORKDIR /opt/emacs
@@ -26,25 +25,8 @@ RUN apt-get update \
     git \
     libtree-sitter-dev \
     libtree-sitter0 \
-    tree-sitter-cli
-
-# Download and extract Emacs
-RUN wget https://ftp.gnu.org/gnu/emacs/emacs-$VERSION.tar.gz \
-    && tar -xf emacs-$VERSION.tar.gz \
-    && rm emacs-$VERSION.tar.gz
-
-WORKDIR /opt/emacs/emacs-$VERSION/
-
-# Configure and run
-RUN ./autogen.sh \
-    && ./configure \
-    --with-tree-sitter
-
-ENV JOBS=4
-RUN make -j ${JOBS} \
-    && make install \
-    && cd \
-    && rm -rf /opt/emacs/emacs-$VERSION/
+    tree-sitter-cli \
+    emacs
 
 WORKDIR /opt
 

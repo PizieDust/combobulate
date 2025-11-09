@@ -39,6 +39,78 @@
   "Pretty printer for OCaml nodes"      ; TODO Fill this in
   default-name)
 
+(defun combobulate-ocaml-imenu-node-p (node)
+  "Return t if NODE is a valid imenu node for OCaml."
+  (member (treesit-node-type node)
+          '("type_definition"
+            "exception_definition"
+            "external"
+            "value_definition"
+            "method_definition"
+            "instance_variable_definition"
+            "module_definition"
+            "module_type_definition"
+            "class_definition"
+            "open_module"
+            "value_specification")))
+
+(defun combobulate-ocaml-imenu-name-function (node)
+  "Return the name of the imenu entry for NODE in OCaml."
+  (or
+   (pcase (treesit-node-type node)
+     ;; For value definitions (let bindings), get the pattern name
+     ("value_definition"
+      (when-let* ((let-binding (treesit-search-subtree node "let_binding"))
+                  (pattern (treesit-node-child-by-field-name let-binding "pattern"))
+                  (name-node (or (treesit-search-subtree pattern "value_name")
+                                 (treesit-search-subtree pattern "value_pattern"))))
+        (concat "let " (treesit-node-text name-node t))))
+
+     ;; For type definitions, get the type name
+     ("type_definition"
+      (when-let* ((type-binding (treesit-search-subtree node "type_binding"))
+                  (name-node (treesit-search-subtree type-binding "type_constructor")))
+        (concat "type " (treesit-node-text name-node t))))
+
+     ;; For module definitions, get the module name
+     ("module_definition"
+      (when-let* ((module-binding (treesit-search-subtree node "module_binding"))
+                  (name-node (treesit-search-subtree module-binding "module_name")))
+        (concat "module " (treesit-node-text name-node t))))
+
+     ;; For class definitions, get the class name
+     ("class_definition"
+      (when-let* ((class-binding (treesit-search-subtree node "class_binding"))
+                  (name-node (treesit-search-subtree class-binding "class_name")))
+        (concat "class " (treesit-node-text name-node t))))
+
+     ;; For exception definitions, get the exception name
+     ("exception_definition"
+      (when-let ((name-node (treesit-search-subtree node "constructor_name")))
+        (concat "exception " (treesit-node-text name-node t))))
+
+     ;; For external definitions, get the name
+     ("external"
+      (when-let ((name-node (treesit-search-subtree node "value_name")))
+        (concat "external " (treesit-node-text name-node t))))
+
+     ;; For module type definitions
+     ("module_type_definition"
+      (when-let ((name-node (treesit-search-subtree node "module_type_name")))
+        (concat "module type " (treesit-node-text name-node t))))
+
+     ;; For value specifications (in .mli files)
+     ("value_specification"
+      (when-let ((name-node (treesit-search-subtree node "value_name")))
+        (concat "val " (treesit-node-text name-node t))))
+
+     ;; For method definitions
+     ("method_definition"
+      (when-let ((name-node (treesit-search-subtree node "method_name")))
+        (concat "method " (treesit-node-text name-node t)))))
+   ;; Fallback to just the first text content we can find
+   "Anonymous"))
+
 (eval-and-compile
 
   ;; Define combobulate support for *.ml files
@@ -205,14 +277,44 @@
          ))
     )))
 
+;; Note: OCaml has two tree-sitter grammars: 'ocaml' for .ml files and
+;; 'ocaml_interface' for .mli files. The tuareg-treesit-bridge automatically
+;; creates the appropriate parser based on the file extension. Both grammars
+;; share the same node types for the constructs we care about (types, modules,
+;; classes, etc.), so the same definitions and imenu configuration work for both.
+;;
+;; We register both as separate "languages" in Combobulate terms, but they share
+;; the same configuration. The :language parameter matches what tree-sitter uses,
+;; while the :name is used for Emacs Lisp symbol names.
 (define-combobulate-language
  :name ocaml
  :language ocaml
- :major-modes (ocaml-ts-mode tuareg-mode) ; Only work for experimental tree-sitter modes.
+ :major-modes (ocaml-ts-mode tuareg-mode)
  :custom combobulate-ocaml-definitions
  :setup-fn combobulate-ocaml-setup)
 
-(defun combobulate-ocaml-setup (_))
+(define-combobulate-language
+ :name ocaml-interface
+ :language ocaml_interface
+ :major-modes (ocaml-ts-mode tuareg-mode)
+ :custom combobulate-ocaml-definitions
+ :setup-fn combobulate-ocaml-setup)
+
+(defun combobulate-ocaml-setup (_)
+  "Setup function for OCaml mode with Combobulate."
+  ;; Configure imenu for OCaml files
+  (setq-local treesit-simple-imenu-settings
+              `(("Type" "type_definition" nil combobulate-ocaml-imenu-name-function)
+                ("Module" "module_definition" nil combobulate-ocaml-imenu-name-function)
+                ("Class" "class_definition" nil combobulate-ocaml-imenu-name-function)
+                ("Value" "value_definition" nil combobulate-ocaml-imenu-name-function)
+                ("Function" "value_definition" nil combobulate-ocaml-imenu-name-function)
+                ("Exception" "exception_definition" nil combobulate-ocaml-imenu-name-function)
+                ("External" "external" nil combobulate-ocaml-imenu-name-function)
+                ("Module Type" "module_type_definition" nil combobulate-ocaml-imenu-name-function)
+                ("Value Spec" "value_specification" nil combobulate-ocaml-imenu-name-function)))
+  ;; Use tree-sitter based imenu (treesit-simple-imenu creates the index from the settings above)
+  (setq-local imenu-create-index-function #'treesit-simple-imenu))
 
 (provide 'combobulate-ocaml)
 ;;; combobulate-ocaml.el ends here

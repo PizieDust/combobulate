@@ -70,11 +70,22 @@
   (treesit-node-parser node))
 
 (defun combobulate-primary-language (&optional quiet)
+  "Get the Combobulate language name for the current buffer.
+
+Returns the Combobulate language NAME (e.g., 'ocaml-interface'), not the
+tree-sitter language (e.g., 'ocaml_interface'). This ensures symbol names
+are valid Emacs Lisp identifiers."
+  (declare-function combobulate-get-language-name-from-treesit "combobulate-setup")
+  (declare-function combobulate-get-registered-language "combobulate-setup")
   (or
-   (treesit-language-at (point))
+   ;; First try to get language from parser at point and map to Combobulate name
+   (when-let ((ts-lang (treesit-language-at (point))))
+     (combobulate-get-language-name-from-treesit ts-lang))
+   ;; Fallback to registered language for this major mode
    (car (combobulate-get-registered-language major-mode))
-   (when-let ((first-language (car (combobulate-parser-list))))
-     (combobulate-parser-language first-language))
+   ;; Last resort: get first parser and map to Combobulate name
+   (when-let ((first-parser (car (combobulate-parser-list))))
+     (combobulate-get-language-name-from-treesit (combobulate-parser-language first-parser)))
    (unless quiet
      (error "No parsers available"))))
 

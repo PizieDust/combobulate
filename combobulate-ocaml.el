@@ -359,14 +359,14 @@
 (define-combobulate-language
  :name ocaml
  :language ocaml
- :major-modes (ocaml-ts-mode tuareg-mode)
+ :major-modes (tuareg-mode)
  :custom combobulate-ocaml-definitions
  :setup-fn combobulate-ocaml-setup)
 
 (define-combobulate-language
  :name ocaml-interface
  :language ocaml_interface
- :major-modes (ocaml-ts-mode tuareg-mode)
+ :major-modes (tuareg-mode)
  :custom combobulate-ocaml-interface-definitions
  :setup-fn combobulate-ocaml-setup)
 

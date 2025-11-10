@@ -462,6 +462,16 @@ Returns the NAME from the registered language alist, or TREESIT-LANG if not foun
                      combobulate-registered-languages-alist))
       treesit-lang))
 
+(defun combobulate-get-treesit-language-from-name (combobulate-name)
+  "Get the tree-sitter language for a Combobulate language name COMBOBULATE-NAME.
+
+Returns the tree-sitter LANGUAGE from the registered language alist, or
+COMBOBULATE-NAME if not found."
+  (or (nth 3 (seq-find (pcase-lambda (`(,name _ _ _))
+                        (eq name combobulate-name))
+                      combobulate-registered-languages-alist))
+      combobulate-name))
+
 (defun combobulate-maybe-activate (&optional raise-if-missing called-interactively)
   "Maybe activate Combobulate in the current buffer.
 

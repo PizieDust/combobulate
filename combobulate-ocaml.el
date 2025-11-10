@@ -113,7 +113,7 @@
 
 (eval-and-compile
 
-  ;; Define combobulate support for *.ml files
+  ;; Define combobulate support for *.ml files (implementations)
   (defconst combobulate-ocaml-definitions
     ;; ... DEFINITIONS ...
     ;; Context nodes is a list of node types that are contextual in your language.
@@ -136,7 +136,6 @@
       ;; In OCaml it is any _definition node. Select the defun using C-M-h
       (procedures-defun
        '((:activation-nodes ((:nodes (
-                                      ;; ml source files
                                       "type_definition"
                                       "exception_definition"
                                       "external"
@@ -145,14 +144,7 @@
                                       "instance_variable_definition"
                                       "module_definition"
                                       "module_type_definition"
-                                      "class_definition"
-
-                                      ;; mli source files
-                                      "open_module"
-                                      "type_definition"
-                                      "value_specification"
-                                      "exception_definition"
-                                      "module_definition"))))))
+                                      "class_definition"))))))
 
       ;; Logical navigation is bound to M-a and M-e. These commands move to the
       ;; next logical node after or before point. It defaults to all possible nodes
@@ -275,17 +267,95 @@
           :selector (:choose node :match-children t))
 
          ))
+    ))
+
+  ;; Define combobulate support for *.mli files (interfaces)
+  ;; Interface files have a subset of constructs compared to implementation files
+  (defconst combobulate-ocaml-interface-definitions
+    '((context-nodes
+       '("false" "true" "number" "class_name" "value_name" "module_name" "module_type_name" "field_name"))
+
+      (envelope-indent-region-function #'indent-region)
+      (pretty-print-node-name-function #'combobulate-ocaml-pretty-print-node-name)
+      (plausible-separators '(";" ",", "|"))
+
+      ;; Interface files only have specifications, not definitions
+      (procedures-defun
+       '((:activation-nodes ((:nodes (
+                                      "type_definition"
+                                      "exception_definition"
+                                      "value_specification"  ; val declarations
+                                      "module_definition"
+                                      "module_type_definition"
+                                      "class_type_definition"  ; class type specs
+                                      "open_module"))))))
+
+      (procedures-logical
+       '((:activation-nodes ((:nodes (all))))))
+
+      ;; Sibling navigation - same as implementation files
+      (procedures-sibling
+       '(
+         (:activation-nodes
+          ((:nodes (
+            "variant_declaration" "record_declaration")))
+          :selector (:choose node :match-children t))
+
+          (:activation-nodes
+          ((:nodes (
+            "attribute" "field_declaration"
+            (rule "attribute_payload")
+            (rule "object_expression")
+            (rule "constructor_declaration")
+            (rule "class_binding")
+            (rule "type_binding")
+            (rule "signature")
+            (irule "signature")
+            (rule "_class_field_specification")
+            (rule "_signature_item"))
+                   ))
+          :selector (:choose
+                     node
+                     :match-siblings t))
+
+          (:activation-nodes
+          ((:nodes (
+            (rule "compilation_unit")
+                    )))
+          :selector (:choose node :match-children t))
+         ))
+
+      ;; Hierarchy navigation - simplified for interfaces
+      (procedures-hierarchy
+       '(
+        (:activation-nodes
+          ((:nodes (
+            (rule "attribute_payload")
+            (rule "object_expression")
+            (rule "constructor_declaration")
+            (rule "class_binding")
+            (rule "type_binding")
+            (irule "signature")
+            (rule "_signature_item"))
+                   ))
+          :selector (:choose
+                     node
+                     :match-children t))
+
+         (:activation-nodes
+          ((:nodes (rule "compilation_unit")))
+          :selector (:choose node :match-children t))
+         ))
     )))
 
 ;; Note: OCaml has two tree-sitter grammars: 'ocaml' for .ml files and
 ;; 'ocaml_interface' for .mli files. The tuareg-treesit-bridge automatically
-;; creates the appropriate parser based on the file extension. Both grammars
-;; share the same node types for the constructs we care about (types, modules,
-;; classes, etc.), so the same definitions and imenu configuration work for both.
+;; creates the appropriate parser based on the file extension.
 ;;
-;; We register both as separate "languages" in Combobulate terms, but they share
-;; the same configuration. The :language parameter matches what tree-sitter uses,
-;; while the :name is used for Emacs Lisp symbol names.
+;; We register both as separate "languages" in Combobulate terms with their own
+;; rule sets. Interface files (.mli) have a more restricted set of top-level
+;; constructs (specifications rather than implementations). The :language parameter
+;; matches what tree-sitter uses, while the :name is used for Emacs Lisp symbol names.
 (define-combobulate-language
  :name ocaml
  :language ocaml
@@ -297,7 +367,7 @@
  :name ocaml-interface
  :language ocaml_interface
  :major-modes (ocaml-ts-mode tuareg-mode)
- :custom combobulate-ocaml-definitions
+ :custom combobulate-ocaml-interface-definitions
  :setup-fn combobulate-ocaml-setup)
 
 (defun combobulate-ocaml-setup (_)

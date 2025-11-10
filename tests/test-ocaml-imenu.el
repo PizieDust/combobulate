@@ -33,7 +33,7 @@
   "Test that imenu is correctly populated for OCaml .ml files."
   :tags '(ocaml imenu combobulate)
   (skip-unless (treesit-language-available-p 'ocaml))
-  (let ((fixture-file (expand-file-name "tests/fixtures/imenu/ocaml-sample.ml"
+  (let ((fixture-file (expand-file-name "fixtures/imenu/ocaml-sample.ml"
                                         default-directory)))
     (with-temp-buffer
       ;; Load the file content
@@ -78,7 +78,7 @@
   "Test that imenu is correctly populated for OCaml .mli files."
   :tags '(ocaml imenu combobulate)
   (skip-unless (treesit-language-available-p 'ocaml_interface))
-  (let ((fixture-file (expand-file-name "tests/fixtures/imenu/ocaml-sample.mli"
+  (let ((fixture-file (expand-file-name "fixtures/imenu/ocaml-sample.mli"
                                         default-directory)))
     (with-temp-buffer
       ;; Load the file content

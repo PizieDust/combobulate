@@ -115,8 +115,11 @@ are valid Emacs Lisp identifiers."
   (cl-assert (combobulate-node-p node) t "Must be a real tree-sitter node")
   (treesit-node-buffer node))
 
-(defsubst combobulate-query-validate (language query)
-  (treesit-query-validate language query))
+(defun combobulate-query-validate (language query)
+  "Validate QUERY for LANGUAGE.
+LANGUAGE can be a Combobulate name or tree-sitter language."
+  (declare-function combobulate-get-treesit-language-from-name "combobulate-setup")
+  (treesit-query-validate (combobulate-get-treesit-language-from-name language) query))
 
 (defsubst combobulate-query-capture (node query &optional beg end node-only)
   (treesit-query-capture node query beg end node-only))
@@ -181,9 +184,11 @@ are valid Emacs Lisp identifiers."
       (treesit-node-eq node1 node2)
     (eq node1 node2)))
 
-(defsubst combobulate-root-node ()
+(defun combobulate-root-node ()
+  "Get the root node for the primary language in the current buffer."
+  (declare-function combobulate-get-treesit-language-from-name "combobulate-setup")
   (treesit-buffer-root-node
-   (combobulate-primary-language)))
+   (combobulate-get-treesit-language-from-name (combobulate-primary-language))))
 
 (defsubst combobulate-node-descendant-for-range (node beg end &optional all)
   (treesit-node-descendant-for-range node beg end (not all)))

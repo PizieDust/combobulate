@@ -221,8 +221,7 @@
 
           (:activation-nodes
           ((:nodes (
-            (rule "compilation_unit") 
-                    )))
+            (rule "compilation_unit"))))
           :selector (:choose node :match-children t))
          ))
 
@@ -303,6 +302,9 @@
 
           (:activation-nodes
           ((:nodes (
+            ;; Top-level interface items - using rule to get all _signature_item types
+            (rule "_signature_item")
+            ;; Other nodes
             "attribute" "field_declaration"
             (rule "attribute_payload")
             (rule "object_expression")
@@ -311,8 +313,7 @@
             (rule "type_binding")
             (rule "signature")
             (irule "signature")
-            (rule "_class_field_specification")
-            (rule "_signature_item"))
+            (rule "_class_field_specification"))
                    ))
           :selector (:choose
                      node

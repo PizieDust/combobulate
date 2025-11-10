@@ -42,14 +42,36 @@
 (defsubst combobulate-node-p (node)
   (treesit-node-p node))
 
-(defsubst combobulate-buffer-root-node (&optional language)
-  (treesit-buffer-root-node (or language (combobulate-primary-language))))
+(defun combobulate-buffer-root-node (&optional language)
+  "Get the root node for LANGUAGE in the current buffer.
+LANGUAGE can be either a Combobulate language name or tree-sitter language symbol."
+  (declare-function combobulate-get-treesit-language-from-name "combobulate-setup")
+  (let ((ts-lang (if language
+                     (combobulate-get-treesit-language-from-name language)
+                   (combobulate-get-treesit-language-from-name (combobulate-primary-language)))))
+    (treesit-buffer-root-node ts-lang)))
 
-(defsubst combobulate-node-on (beg end &optional parser-or-lang named)
-  (treesit-node-on beg end (or parser-or-lang (combobulate-primary-language)) named))
+(defun combobulate-node-on (beg end &optional parser-or-lang named)
+  "Get the smallest node covering BEG to END for PARSER-OR-LANG.
+PARSER-OR-LANG can be a parser, Combobulate language name, or tree-sitter language."
+  (declare-function combobulate-get-treesit-language-from-name "combobulate-setup")
+  (let ((ts-lang (if parser-or-lang
+                     (if (treesit-parser-p parser-or-lang)
+                         parser-or-lang
+                       (combobulate-get-treesit-language-from-name parser-or-lang))
+                   (combobulate-get-treesit-language-from-name (combobulate-primary-language)))))
+    (treesit-node-on beg end ts-lang named)))
 
-(defsubst combobulate-node-at (pos &optional parser-or-lang named)
-  (treesit-node-at pos (or parser-or-lang (combobulate-primary-language)) named))
+(defun combobulate-node-at (pos &optional parser-or-lang named)
+  "Get the smallest node at POS for PARSER-OR-LANG.
+PARSER-OR-LANG can be a parser, Combobulate language name, or tree-sitter language."
+  (declare-function combobulate-get-treesit-language-from-name "combobulate-setup")
+  (let ((ts-lang (if parser-or-lang
+                     (if (treesit-parser-p parser-or-lang)
+                         parser-or-lang
+                       (combobulate-get-treesit-language-from-name parser-or-lang))
+                   (combobulate-get-treesit-language-from-name (combobulate-primary-language)))))
+    (treesit-node-at pos ts-lang named)))
 
 (defsubst combobulate-induce-sparse-tree (root predicate &optional process-fn limit)
   (treesit-induce-sparse-tree root predicate process-fn limit))

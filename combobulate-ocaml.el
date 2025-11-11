@@ -51,6 +51,9 @@
             "module_definition"
             "module_type_definition"
             "class_definition"
+            "class_type_definition"
+            "include_module"
+            "include_module_type"
             "open_module"
             "value_specification")))
 
@@ -107,7 +110,23 @@
      ;; For method definitions
      ("method_definition"
       (when-let ((name-node (treesit-search-subtree node "method_name")))
-        (concat "method " (treesit-node-text name-node t)))))
+        (concat "method " (treesit-node-text name-node t))))
+
+     ;; For class type definitions
+     ("class_type_definition"
+      (when-let* ((class-type-binding (treesit-search-subtree node "class_type_binding"))
+                  (name-node (treesit-search-subtree class-type-binding "class_type_name")))
+        (concat "class type " (treesit-node-text name-node t))))
+
+     ;; For include_module
+     ("include_module"
+      (when-let ((module-node (treesit-node-child-by-field-name node "module")))
+        (concat "include " (treesit-node-text module-node t))))
+
+     ;; For include_module_type
+     ("include_module_type"
+      (when-let ((sig-node (treesit-search-subtree node "signature")))
+        "include <sig>")))
    ;; Fallback to just the first text content we can find
    "Anonymous"))
 
@@ -272,7 +291,10 @@
   ;; Interface files have a subset of constructs compared to implementation files
   (defconst combobulate-ocaml-interface-definitions
     '((context-nodes
-       '("false" "true" "number" "class_name" "value_name" "module_name" "module_type_name" "field_name"))
+       '("false" "true" "number" "class_name" "value_name" "module_name" "module_type_name" "field_name"
+         ;; Keywords and punctuation that should be skipped during navigation
+         "module" "sig" "end" "val" "type" "class" "exception" "open" "external"
+         ":" ";" "," "|" "->" "=" "(" ")" "[" "]" "{" "}"))
 
       (envelope-indent-region-function #'indent-region)
       (pretty-print-node-name-function #'combobulate-ocaml-pretty-print-node-name)
@@ -286,7 +308,10 @@
                                       "value_specification"  ; val declarations
                                       "module_definition"
                                       "module_type_definition"
+                                      "class_definition"
                                       "class_type_definition"  ; class type specs
+                                      "include_module"
+                                      "include_module_type"
                                       "open_module"))))))
 
       (procedures-logical
@@ -313,8 +338,7 @@
             (rule "type_binding")
             (rule "signature")
             (irule "signature")
-            (rule "_class_field_specification"))
-                   ))
+            (rule "_class_field_specification"))))
           :selector (:choose
                      node
                      :match-siblings t))
@@ -329,13 +353,35 @@
       ;; Hierarchy navigation - simplified for interfaces
       (procedures-hierarchy
        '(
+        ;; From module_name, navigate up to parent then to signature
+        (:activation-nodes
+          ((:nodes ("module_name")))
+          :selector (:choose parent
+                             :match-children (:match-rules ("signature"))))
+
+        ;; From sig keyword, navigate to sibling signature items (type_definition, value_specification, etc.)
+        (:activation-nodes
+          ((:nodes ("sig")))
+          :selector (:choose node
+                             :match-siblings (:match-rules ((rule "_signature_item")))))
+
+        ;; From method keyword, navigate to parent then to method_name
+        (:activation-nodes
+          ((:nodes ("method")))
+          :selector (:choose parent
+                             :match-children (:match-rules ("method_name"))))
+
+        ;; For signature and other structural nodes, match their children
         (:activation-nodes
           ((:nodes (
             (rule "attribute_payload")
             (rule "object_expression")
             (rule "constructor_declaration")
             (rule "class_binding")
+            "class_body_type"
+            "method_specification"
             (rule "type_binding")
+            (rule "signature")
             (irule "signature")
             (rule "_signature_item"))
                    ))
@@ -378,11 +424,14 @@
               `(("Type" "type_definition" nil combobulate-ocaml-imenu-name-function)
                 ("Module" "module_definition" nil combobulate-ocaml-imenu-name-function)
                 ("Class" "class_definition" nil combobulate-ocaml-imenu-name-function)
+                ("Class Type" "class_type_definition" nil combobulate-ocaml-imenu-name-function)
                 ("Value" "value_definition" nil combobulate-ocaml-imenu-name-function)
                 ("Function" "value_definition" nil combobulate-ocaml-imenu-name-function)
                 ("Exception" "exception_definition" nil combobulate-ocaml-imenu-name-function)
                 ("External" "external" nil combobulate-ocaml-imenu-name-function)
                 ("Module Type" "module_type_definition" nil combobulate-ocaml-imenu-name-function)
+                ("Include" "include_module" nil combobulate-ocaml-imenu-name-function)
+                ("Include Sig" "include_module_type" nil combobulate-ocaml-imenu-name-function)
                 ("Value Spec" "value_specification" nil combobulate-ocaml-imenu-name-function)))
   ;; Use tree-sitter based imenu (treesit-simple-imenu creates the index from the settings above)
   (setq-local imenu-create-index-function #'treesit-simple-imenu))

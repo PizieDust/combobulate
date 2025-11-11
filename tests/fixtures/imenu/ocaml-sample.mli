@@ -20,5 +20,7 @@ class my_class :
 exception MyException of string
 
 module type MyModuleType = sig
+  type t
   val operation : string -> string
+  val double : int -> int
 end

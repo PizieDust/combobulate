@@ -445,7 +445,7 @@ Returns nil if no match is found."
          (result (aref (ert--stats-test-results stats) pos)))
     (apply #'ediff-files
            (plist-get (cdadr (with-no-warnings (cl-etypecase result
-                                                 (ert-test-failed-condition
+                                                 (ert-test-failed
                                                   (ert-test-result-with-condition-condition result)))))
                       :files))))
 

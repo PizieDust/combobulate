@@ -248,6 +248,58 @@
       ;; between nodes. Specifically C-M-d and C-M-u.
       (procedures-hierarchy
        '(
+        ;; KNOWN LIMITATION: Class hierarchy navigation in OCaml has a fundamental issue.
+        ;; The `:match-rules` and `:discard-rules` selectors do not work as expected for OCaml.
+        ;; This means we cannot skip intermediate nodes like `parameter` when navigating through
+        ;; class definitions. The navigation will go through ALL children in tree order:
+        ;;   class → class_definition → class_binding → class_name → parameter → parameter → object_expression
+        ;;
+        ;; The desired navigation path would be:
+        ;;   class → class_name → object → instance_variable_definition
+        ;;
+        ;; But due to the selector limitations, navigation visits parameter nodes before reaching object_expression.
+        ;;
+        ;; This appears to be either:
+        ;; 1. A limitation in how combobulate processes selector rules for certain grammars
+        ;; 2. An issue specific to the OCaml tree-sitter grammar structure
+        ;; 3. A bug in the combobulate procedure matching logic
+        ;;
+        ;; Multiple attempts were made to fix this:
+        ;; - Using `:match-rules` with explicit node types - ignored
+        ;; - Using `:discard-rules` to skip parameters - ignored
+        ;; - Using `:match-siblings` vs `:match-children` - no difference
+        ;; - Using `:position at` - no effect
+        ;; - Adding activation rules for specific node types (class_name) - no effect
+        ;; - Removing conflicting rules from catch-all - no effect
+        ;;
+        ;; The production rules for `class_binding` are:
+        ;;   :*unnamed*: ("abstract_type" "item_attribute" "parameter" "class_function_type" "type_variable")
+        ;;   :body: ("class_function" "let_open_class_expression" "let_class_expression" "class_application")
+        ;;   :name: ("class_name")
+        ;;
+        ;; Note that "object_expression" does not appear in these rules at all, which may be
+        ;; part of the problem.
+
+        ;; Navigate from class_definition through its children
+        (:activation-nodes
+         ((:nodes ((rule "class_definition"))))
+         :selector (:choose node
+                            :match-children t))
+
+        ;; From class_binding through its children (including parameters)
+        ;; NOTE: Attempts to use :discard-rules here to skip parameters do not work
+        (:activation-nodes
+         ((:nodes ((rule "class_binding"))))
+         :selector (:choose node
+                            :match-children t))
+
+        ;; From object_expression to instance variable and method definitions
+        (:activation-nodes
+          ((:nodes ((rule "object_expression"))))
+          :selector (:choose node
+                             :match-children t))
+
+        ;; Catch-all for structural nodes - match all their children
         (:activation-nodes
         ((:nodes ("parameter" "value_path")))
         :selector
@@ -261,12 +313,10 @@
             (rule "module_definition")
             (rule "attribute_payload")
             (irule "function_type")
-            (rule "object_expression")
             (irule "set_expression")
             (irule "infix_expression")
             (rule "constructor_declaration")
-            (rule "class_binding")
-            (rule "class_application")
+            ;; Removed class_application to avoid conflict with class_binding rule above
             (rule "type_binding")
             (rule "method_definition")
             (irule "value_path")

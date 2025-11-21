@@ -115,9 +115,501 @@ issue in combobulate's selector matching for OCaml can be resolved."
       (combobulate-navigate-up)
       (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
              (expected "class"))
-        (should (equal expected actual))
+        (combobulate-soft-should (equal expected actual))
         (unless (equal expected actual)
-          (message "After second C-M-u - Expected: %s, Got: %s" expected actual))))))
+          (message "After second C-M-u - Expected: %s, Got: %s" expected actual)))
+
+      (when combobulate-test--soft-failures
+        (ert-fail
+         (mapconcat #'identity
+                    (nreverse combobulate-test--soft-failures)
+                    "\n")))
+    )))
+    
+  ;; hierarchy test on simple polymorphic variants
+  (ert-deftest combobulate-test-ocaml-implementation-polymorphic_variants-h-navigation ()
+  "Test hierarchy navigation for simple polymorphic variants .ml files."
+  :tags '(ocaml navigation combobulate implementation)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (let ((fixture-file (expand-file-name "fixtures/imenu/demo.ml"
+                                        default-directory)))
+    (with-temp-buffer
+      (insert-file-contents fixture-file)
+      (setq buffer-file-name fixture-file)
+      (tuareg-mode)
+      (combobulate-mode)
+      (sit-for 0.1)
+
+      ;; Navigate to "type color" line
+      (goto-char (point-min))
+      (re-search-forward "^type color")
+      (beginning-of-line)
+
+      ;; Verify we're at the 'type' keyword
+      (let ((node (combobulate-node-at-point)))
+        (combobulate-soft-should (equal "type" (combobulate-node-type node))))
+
+      ;; First C-M-d: should move to type_constructor
+      (combobulate-navigate-down)
+      (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+             (expected "type_constructor"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "1.0 C-M-d - Expected: %s, Got: %s" expected actual)))
+      (let* ((actual (thing-at-point 'word 'no-properties)) (expected "color"))
+        (combobulate-soft-should (string-equal expected actual))
+        (unless (string-equal expected actual)
+          (message "1.1 C-M-d - Expected: %s. Got %s" expected actual)))
+
+      ;; Second C-M-d: should move to [; ideal behavior will be to move to the first tag `Red
+      (combobulate-navigate-down)
+      (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+             (expected "["))
+      (combobulate-soft-should (equal expected actual))
+      (unless (equal expected actual)
+        (message "2.0 C-M-d - Expected: %s. got %s" expected actual)))
+      
+      ;; Third C-M-d: should move to the first tag called `Red but it moves to [
+      (combobulate-navigate-down)
+      (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+             (expected "tag"))
+      (combobulate-soft-should (equal expected actual))
+      (unless (equal expected actual)
+        (message "2.1 C-M-d - Expected: %s. got %s" expected actual)))
+      (let* ((actual (sexp-at-point)) (expected '`Red))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "2.2 C-M-d - Expected: %s. got %s" expected actual)))
+
+      (when combobulate-test--soft-failures
+        (ert-fail
+         (mapconcat #'identity
+                    (nreverse combobulate-test--soft-failures)
+                    "\n")))         
+     )))
+
+
+  ;; sibling test on simple polymorphic variants
+  (ert-deftest combobulate-test-ocaml-implementation-polymorphic_variants-s-navigation ()
+  "Test sibling navigation for simple polymorphic variants .ml files."
+  :tags '(ocaml navigation combobulate implementation)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (let ((fixture-file (expand-file-name "fixtures/imenu/demo.ml"
+                                        default-directory)))
+    (with-temp-buffer
+      (insert-file-contents fixture-file)
+      (setq buffer-file-name fixture-file)
+      (tuareg-mode)
+      (combobulate-mode)
+      (sit-for 0.1)
+
+      ;; Navigate to "type color" line
+      (goto-char (point-min))
+      (re-search-forward "^type color")
+      (beginning-of-line)
+
+      ;; Move point onto the `Red inside the variant
+        (re-search-forward "Red")
+        (goto-char (match-beginning 0))
+
+      (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "tag"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "1.0 Expected: %s. got %s" expected actual)))
+ 
+      ;; C-M-n should move to the second tag called `Green
+      (combobulate-navigate-next)
+      (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+             (expected "tag"))
+      (combobulate-soft-should (equal expected actual))
+      (unless (equal expected actual)
+        (message "2.0 C-M-n - Expected: %s. got %s" expected actual)))
+      (let* ((actual (sexp-at-point)) (expected '`Green))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "2.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+      ;; C-M-n should move to the third tag called `Blue but it moves to `Green
+      (combobulate-navigate-next)
+      (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+             (expected "tag"))
+      (combobulate-soft-should (equal expected actual))
+      (unless (equal expected actual)
+        (message "3.0 C-M-n - Expected: %s. got %s" expected actual)))
+      (let* ((actual (sexp-at-point)) (expected '`Blue))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "3.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+      ;; C-M-n should move to the fourth tag called `RGB but it moves to `Green
+      (combobulate-navigate-next)
+      (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+             (expected "tag"))
+      (combobulate-soft-should (equal expected actual))
+      (unless (equal expected actual)
+        (message "4.0 C-M-n - Expected: %s. got %s" expected actual)))
+      (let* ((actual (sexp-at-point)) (expected '`RGB))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "4.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+      ;; C-M-n should be remain on the node
+      (combobulate-navigate-next)
+      (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+             (expected "tag"))
+      (combobulate-soft-should (equal expected actual))
+      (unless (equal expected actual)
+        (message "5.0 C-M-n - Expected: %s. got %s" expected actual)))
+      (let* ((actual (sexp-at-point)) (expected '`RGB))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "5.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+      (when combobulate-test--soft-failures
+        (ert-fail
+         (mapconcat #'identity
+                    (nreverse combobulate-test--soft-failures)
+                    "\n")))         
+     )))
+
+    (ert-deftest combobulate-test-ocaml-implementation-polymorphic_variants-with-inheritance-navigation ()
+    "Test hierachy and sibling navigation for inherited polymorphic variants"
+    :tags '(ocaml implementation navigation combobulate)
+    (skip-unless (treesit-language-available-p 'ocaml))
+    (let ((fixture-file (expand-file-name "fixtures/imenu/demo.ml"
+                                          default-directory)))
+
+    (with-temp-buffer
+        (insert-file-contents fixture-file)
+        (setq buffer-file-name fixture-file)
+        (tuareg-mode)
+        (combobulate-mode)
+        (sit-for 0.1)
+
+        ;; Navigate to the extended_color definition
+        (goto-char (point-min))
+        (re-search-forward "^type extended_color")
+        (beginning-of-line)
+
+        ;; Move point onto the `basic_color` inside the variant
+        (re-search-forward "basic_color")
+        (goto-char (match-beginning 0))
+
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "type_constructor"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "1.0 C-M-n - Expected: %s. got %s" expected actual)))
+            
+        ;; C-M-n should move to `Yellow
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "tag"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "2.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (sexp-at-point)) (expected '`Yellow))
+          (combobulate-soft-should (equal expected actual))
+          (unless (equal expected actual)
+            (message "2.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        (when combobulate-test--soft-failures
+          (ert-fail
+          (mapconcat #'identity
+                      (nreverse combobulate-test--soft-failures)
+                      "\n")))
+    )))
+
+
+    (ert-deftest combobulate-test-ocaml-implementation-match-case-in-let-binding-s-navigation ()
+    "Test sibling navigation for match cases in a let binding with open polymorphic variant"
+    :tags '(ocaml implementation navigation combobulate)
+    (skip-unless (treesit-language-available-p 'ocaml))
+    (let ((fixture-file (expand-file-name "fixtures/imenu/demo.ml"
+                                          default-directory)))
+
+    (with-temp-buffer
+        (insert-file-contents fixture-file)
+        (setq buffer-file-name fixture-file)
+        (tuareg-mode)
+        (combobulate-mode)
+        (sit-for 0.1)
+
+        ;; Go to the start of the function
+        (goto-char (point-min))
+        (re-search-forward "^let color_to_string")
+        (beginning-of-line)
+
+        ;; Move point to the first match case line
+        (re-search-forward "^  | `Red")
+        (goto-char (match-end 0))
+
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "match_case"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "1.0 C-M-n - Expected: %s. got %s" expected actual)))
+            
+        ;; C-M-n should move to `Green
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "tag"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "2.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (sexp-at-point)) (expected '`Green))
+          (combobulate-soft-should (equal expected actual))
+          (unless (equal expected actual)
+            (message "2.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        ;; C-M-n should move to `Blue
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "tag"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "3.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (sexp-at-point)) (expected '`Blue))
+          (combobulate-soft-should (equal expected actual))
+          (unless (equal expected actual)
+            (message "3.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        ;; C-M-n should move to _
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "value_pattern"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "4.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (symbol-name (symbol-at-point))) (expected "_"))
+          (combobulate-soft-should (equal expected actual))
+          (unless (equal expected actual)
+            (message "4.1 C-M-n - Expected: %S. got %s" expected actual)))
+
+        ;; C-M-p should move to `Blue
+        (combobulate-navigate-previous)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "tag"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "5.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (sexp-at-point)) (expected '`Blue))
+          (combobulate-soft-should (equal expected actual))
+          (unless (equal expected actual)
+            (message "5.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        (when combobulate-test--soft-failures
+          (ert-fail
+          (mapconcat #'identity
+                      (nreverse combobulate-test--soft-failures)
+                      "\n")))
+    )))
+
+
+    (ert-deftest combobulate-test-ocaml-implementation-match-case-in-let-binding-h-navigation ()
+    "Test hierachy navigation for match cases in a let binding with open polymorphic variant"
+    :tags '(ocaml implementation navigation combobulate)
+    (skip-unless (treesit-language-available-p 'ocaml))
+    (let ((fixture-file (expand-file-name "fixtures/imenu/demo.ml"
+                                          default-directory)))
+
+    (with-temp-buffer
+        (insert-file-contents fixture-file)
+        (setq buffer-file-name fixture-file)
+        (tuareg-mode)
+        (combobulate-mode)
+        (sit-for 0.1)
+
+        ;; Go to the start of the function
+        (goto-char (point-min))
+        (re-search-forward "^let color_to_string")
+        (beginning-of-line)
+
+        ;; Move point to the first match case line
+        (re-search-forward "[")
+        (goto-char (match-beginning 0))
+
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "[>"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "1.0 C-M-n - Expected: %s. got %s" expected actual)))
+            
+        ;; C-M-d should move to `Red
+        (combobulate-navigate-down)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "tag"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "2.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (sexp-at-point)) (expected '`Red))
+          (combobulate-soft-should (equal expected actual))
+          (unless (equal expected actual)
+            (message "2.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        ;; C-M-u should move to [>
+        (combobulate-navigate-up)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "[>"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "3.0 C-M-n - Expected: %s. got %s" expected actual)))
+
+        ;; C-M-n should move to string
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "type_constructor"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "4.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (thing-at-point 'word 'no-properties)) (expected "string"))
+          (combobulate-soft-should (equal expected actual))
+          (unless (equal expected actual)
+            (message "4.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        ;; C-M-d should move to the match case
+        (combobulate-navigate-down)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "match_case"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "5.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (sexp-at-point)) (expected '`Red))
+          (combobulate-soft-should (equal expected actual))
+          (unless (equal expected actual)
+            (message "5.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        (when combobulate-test--soft-failures
+          (ert-fail
+          (mapconcat #'identity
+                      (nreverse combobulate-test--soft-failures)
+                      "\n")))
+    )))
+
+
+    (ert-deftest combobulate-test-ocaml-implementation-class-s-navigation ()
+    "Test sibling navigation inside a class"
+    :tags '(ocaml implementation navigation combobulate)
+    (skip-unless (treesit-language-available-p 'ocaml))
+    (let ((fixture-file (expand-file-name "fixtures/imenu/demo.ml"
+                                          default-directory)))
+
+    (with-temp-buffer
+        (insert-file-contents fixture-file)
+        (setq buffer-file-name fixture-file)
+        (tuareg-mode)
+        (combobulate-mode)
+        (sit-for 0.1)
+
+        ;; Navigate to "class point" line
+        (goto-char (point-min))
+        (re-search-forward "^class point")
+        (beginning-of-line)
+
+        ;; Move point onto the val mutable inside the variant
+        (re-search-forward "val mutable")
+        (goto-char (match-beginning 0))
+
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "val"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "1.0 Expected: %s. got %s" expected actual)))
+            
+        ;; C-M-n should move to the next val mutable
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "val"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "2.0 C-M-n - Expected: %s. got %s" expected actual)))
+
+        ;; C-M-n should move to the next method
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "method"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "3.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (thing-at-point 'word 'no-properties))
+              (expected "method"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "3.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        ;; C-M-p should move to the previous val
+        (combobulate-navigate-previous)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "val"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "3.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (thing-at-point 'word 'no-properties))
+              (expected "val"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "3.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+         ;; C-M-n should move to the next method
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "method"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "4.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (thing-at-point 'word 'no-properties))
+              (expected "method"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "4.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        ;; C-M-n should move to the next method
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "method"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "5.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (thing-at-point 'word 'no-properties))
+              (expected "method"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "5.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        ;; C-M-n should move to the next method
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "method"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "6.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (thing-at-point 'word 'no-properties))
+              (expected "method"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "6.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+         ;; C-M-d should move to the method_name
+        (combobulate-navigate-next)
+        (let* ((actual (combobulate-node-type (combobulate-node-at-point)))
+              (expected "method_name"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "7.0 C-M-n - Expected: %s. got %s" expected actual)))
+        (let* ((actual (thing-at-point 'word 'no-properties))
+              (expected "move"))
+        (combobulate-soft-should (equal expected actual))
+        (unless (equal expected actual)
+          (message "7.1 C-M-n - Expected: %s. got %s" expected actual)))
+
+        (when combobulate-test--soft-failures
+          (ert-fail
+          (mapconcat #'identity
+                      (nreverse combobulate-test--soft-failures)
+                      "\n")))
+    )))
+
 
 (provide 'test-ocaml-implementation-navigation)
 ;;; test-ocaml-implementation-navigation.el ends here

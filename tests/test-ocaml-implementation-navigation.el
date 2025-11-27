@@ -1898,5 +1898,412 @@
       (should 
         (equal expected actual)) ) ) )) 
 
+(ert-deftest combobulate-test-ocaml-implementation-module-extended-int-h-navigation () "Test hierarchy navigation inside module ExtendedInt" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module ExtendedInt") (beginning-of-line) 
+;; Move point onto include
+ 
+    (re-search-forward "include IntComparablePrintable") 
+    (goto-char (match-beginning 0)) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "include")) 
+      (unless 
+        (equal expected actual) 
+        (message "1.0 Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-n should move to let let add
+ 
+    (combobulate-navigate-next) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "let")) 
+      (unless 
+        (equal expected actual) 
+        (message "2.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; navigate down should go to add
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "3.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "add") ) 
+      (unless 
+        (equal expected actual) 
+        (message "3.1 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should move to x
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_pattern")) 
+      (unless 
+        (equal expected actual) 
+        (message "4.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "x") ) 
+      (unless 
+        (equal expected actual) 
+        (message "4.1 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ; C-M-d should move to y
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_pattern")) 
+      (unless 
+        (equal expected actual) 
+        (message "5.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "y") ) 
+      (unless 
+        (equal expected actual) 
+        (message "5.1 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ; C-M-d should move to x at x + y
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "6.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "x") ) 
+      (unless 
+        (equal expected actual) 
+        (message "6.1 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ; C-M-d should move to + at x + y
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "add_operator")) 
+      (unless 
+        (equal expected actual) 
+        (message "7.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ; C-M-d should move to y at x + y
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "7.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ; C-M-u should move to + at x + y
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "add_operator")) 
+      (unless 
+        (equal expected actual) 
+        (message "7.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ; C-M-u should move to x at x + y
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "8.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ; C-M-u should move to add
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "9.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "add") ) 
+      (unless 
+        (equal expected actual) 
+        (message "9.1 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-u should move to let
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "let")) 
+      (unless 
+        (equal expected actual) 
+        (message "10.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-u should move to struct
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "struct")) 
+      (unless 
+        (equal expected actual) 
+        (message "11.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ) )) 
+
+(ert-deftest combobulate-test-ocaml-implementation-let-old-function-s-navigation () "Test hierarchy navigation inside let old_function" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "let old_function") (beginning-of-line) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "let")) 
+      (unless 
+        (equal expected actual) 
+        (message "1.0 Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should move to old_function
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "2.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "old") ) 
+      (unless 
+        (equal expected actual) 
+        (message "2.1 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; navigate down should move to x
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_pattern")) 
+      (unless 
+        (equal expected actual) 
+        (message "3.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "x") ) 
+      (unless 
+        (equal expected actual) 
+        (message "3.1 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; navigate down should move to x at x + 1
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "4.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; navigate down should move to + at x + 1
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "add_operator")) 
+      (unless 
+        (equal expected actual) 
+        (message "5.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; navigate down should move to 1 at x + 1
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "number")) 
+      (unless 
+        (equal expected actual) 
+        (message "6.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; navigate down should move to @@
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "[@@")) 
+      (unless 
+        (equal expected actual) 
+        (message "7.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; navigate down should move to "Use .."
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "string")) 
+      (unless 
+        (equal expected actual) 
+        (message "7.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ; navigate up should move to [@@
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "[@@")) 
+      (unless 
+        (equal expected actual) 
+        (message "8.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ; navigate up should move to old_function
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "value_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "9.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ; navigate up should move to let
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "let")) 
+      (unless 
+        (equal expected actual) 
+        (message "10.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ) )) 
+
 (provide 'test-ocaml-implementation-navigation) 
 ;;; test-ocaml-implementation-navigation.el ends here

@@ -1334,5 +1334,569 @@
       (should 
         (equal expected actual)) ) ) )) 
 
+(ert-deftest combobulate-test-ocaml-implementation-module-type-comparable-h-navigation () "Test hierachy navigation on module type comparable" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module type COMPARABLE") (beginning-of-line) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "module")) 
+      (unless 
+        (equal expected actual) 
+        (message "1.0 Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should move to COMPARABLE
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "module_type_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "2.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) 
+        (expected "COMPARABLE") ) 
+      (unless 
+        (equal expected actual) 
+        (message "2.1 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should go to type t but due to treesitter representation it has to go to sig
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "sig")) 
+      (unless 
+        (equal expected actual) 
+        (message "3.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should go now to the body and begin at type t
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "type")) 
+      (unless 
+        (equal expected actual) 
+        (message "4.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ) )) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-type-comparable-printable-h-navigation () "Test hierachy navigation on the include statement in module type comparable_printable" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module type COMPARABLE_PRINTABLE") (beginning-of-line) 
+    (re-search-forward "include\\s-+PRINTABLE") 
+    (goto-char (match-beginning 0)) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "include")) 
+      (unless 
+        (equal expected actual) 
+        (message "1.0 Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should move to PRINTABLE
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "module_type_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "2.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) 
+        (expected "PRINTABLE") ) 
+      (unless 
+        (equal expected actual) 
+        (message "2.1 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should go to type t 
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "type")) 
+      (unless 
+        (equal expected actual) 
+        (message "3.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should go to t
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "type_constructor")) 
+      (unless 
+        (equal expected actual) 
+        (message "4.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should go to t
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "type_constructor")) 
+      (unless 
+        (equal expected actual) 
+        (message "5.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ) )) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-int-comparable-printable-s-navigation () "Test sibling navigation inside module IntComparablePrintable" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module IntComparablePrintable") (beginning-of-line) 
+;; Move point onto type t
+ 
+    (re-search-forward "type t") 
+    (goto-char (match-beginning 0)) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "type")) 
+      (unless 
+        (equal expected actual) 
+        (message "1.0 Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-n should move to let compare
+ 
+    (combobulate-navigate-next) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "let")) 
+      (unless 
+        (equal expected actual) 
+        (message "2.0 C-M-n - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) (forward-word) (forward-word) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "compare") ) 
+      (unless 
+        (equal expected actual) 
+        (message "2.1 C-M-n - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; navigate next should move to let to_string
+ 
+    (combobulate-navigate-next) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "let")) 
+      (unless 
+        (equal expected actual) 
+        (message "3.0 C-M-n - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) (forward-word) (forward-word) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "to") ) 
+      (unless 
+        (equal expected actual) 
+        (message "3.1 C-M-n - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-p should move to let compare
+ 
+    (combobulate-navigate-previous) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "let")) 
+      (unless 
+        (equal expected actual) 
+        (message "3.0 C-M-p - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) (forward-word) (forward-word) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "compare") ) 
+      (unless 
+        (equal expected actual) 
+        (message "3.1 C-M-p - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; move back to type t
+ 
+    (combobulate-navigate-previous) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "type")) 
+      (unless 
+        (equal expected actual) 
+        (message "4.0 C-M-p - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ) )) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-int-comparable-printable-h-navigation () "Test hierarchy navigation inside module IntComparablePrintable" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module IntComparablePrintable") (beginning-of-line) 
+;; Move point onto module
+ 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "module")) 
+      (unless 
+        (equal expected actual) 
+        (message "1.0 Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should move to IntComparablePrintable
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "module_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "2.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual))) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) 
+        (expected "IntComparablePrintable") ) 
+      (unless 
+        (equal expected actual) 
+        (message "2.1 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-dt should move to struct
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "struct")) 
+      (unless 
+        (equal expected actual) 
+        (message "3.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should move to type
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "type")) 
+      (unless 
+        (equal expected actual) 
+        (message "4.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should move to t
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "type_constructor")) 
+      (unless 
+        (equal expected actual) 
+        (message "5.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-d should move to int
+ 
+    (combobulate-navigate-down) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "type_constructor")) 
+      (unless 
+        (equal expected actual) 
+        (message "5.0 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "int") ) 
+      (unless 
+        (equal expected actual) 
+        (message "5.1 C-M-d - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-u should move to t
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "type_constructor")) 
+      (unless 
+        (equal expected actual) 
+        (message "6.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-u should move to type
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "type")) 
+      (unless 
+        (equal expected actual) 
+        (message "6.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-u should move to struct
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "struct")) 
+      (unless 
+        (equal expected actual) 
+        (message "7.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-u should move to IntComparablePrintable
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) 
+        (expected "module_name")) 
+      (unless 
+        (equal expected actual) 
+        (message "8.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-u should move to module
+ 
+    (combobulate-navigate-up) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "module")) 
+      (unless 
+        (equal expected actual) 
+        (message "9.0 C-M-u - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ) )) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-extended-int-s-navigation () "Test sibling navigation inside module ExtendedInt" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module ExtendedInt") (beginning-of-line) 
+;; Move point onto include
+ 
+    (re-search-forward "include IntComparablePrintable") 
+    (goto-char (match-beginning 0)) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "include")) 
+      (unless 
+        (equal expected actual) 
+        (message "1.0 Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-n should move to let let add
+ 
+    (combobulate-navigate-next) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "let")) 
+      (unless 
+        (equal expected actual) 
+        (message "2.0 C-M-n - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) (forward-word) (forward-word) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "add") ) 
+      (unless 
+        (equal expected actual) 
+        (message "2.1 C-M-n - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; navigate next should move to let multiply
+ 
+    (combobulate-navigate-next) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "let")) 
+      (unless 
+        (equal expected actual) 
+        (message "3.0 C-M-n - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) (forward-word) (forward-word) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "multiply") ) 
+      (unless 
+        (equal expected actual) 
+        (message "3.1 C-M-n - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; C-M-p should move to let add
+ 
+    (combobulate-navigate-previous) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "let")) 
+      (unless 
+        (equal expected actual) 
+        (message "4.0 C-M-p - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) (forward-word) (forward-word) 
+    (let* 
+      ( 
+        (actual 
+          (thing-at-point 'word 'no-properties)) (expected "add") ) 
+      (unless 
+        (equal expected actual) 
+        (message "4.1 C-M-p - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) 
+;; move back to include
+ 
+    (combobulate-navigate-previous) 
+    (let* 
+      ( 
+        (actual 
+          (combobulate-node-type 
+            (combobulate-node-at-point))) (expected "include")) 
+      (unless 
+        (equal expected actual) 
+        (message "5.0 C-M-p - Expected: %s. got %s" expected actual)) 
+      (should 
+        (equal expected actual)) ) ) )) 
+
 (provide 'test-ocaml-implementation-navigation) 
 ;;; test-ocaml-implementation-navigation.el ends here

@@ -3185,5 +3185,327 @@
         (should 
           (equal expected actual)))) ))) 
 
+(ert-deftest combobulate-test-ocaml-implementation-let-p1 () "Test pc navigation in let p1" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "let p1") (back-to-indentation) 
+    (combobulate-step "be on let" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to p1" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to positive" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_name"))) 
+    (combobulate-step "move to make" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to 5" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "number"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-let-p1-p2 () "Test sib navigation between let p1 and let p2" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "let p1") (back-to-indentation) 
+    (combobulate-step "be on let" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to let p2" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-let-test-list-pc () "Test parent child navigation between the items in let test_list" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "let test_list") (back-to-indentation) 
+    (combobulate-step "be on let" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to test_list" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to [" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "["))) 
+    (combobulate-step "move to 1" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "number"))) 
+    (combobulate-step "move to 2" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "number"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-let-test-list-sib () "Test sibling navigation between the items in let test_list" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "let test_list") (back-to-indentation) 
+    (combobulate-step "be on let" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to test_list" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to [" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "["))) 
+    (combobulate-step "move to 1" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "number"))) 
+    (combobulate-step "move to 2" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "number"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-let-add-func () "Test sibling navigation between the params of functions" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "let add_fn") (back-to-indentation) 
+    (combobulate-step "be on let" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to add_fn" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to x" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to y" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-let-add-func-body () "Test parent child navigation of functions" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "let add_fn") (back-to-indentation) 
+    (combobulate-step "be on let" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to add_fn" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to x" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to x in x+y" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-type-monad () "Test in module type monad" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module type MONAD") (beginning-of-line) 
+    (combobulate-step "be on module" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module"))) 
+    (combobulate-step "move to MONAD" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_type_name"))) 
+    (combobulate-step "move to sig" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "sig"))) 
+    (combobulate-step "move to type in the body" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-type-monad-2 () "Test in module type monad" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module type MONAD") (beginning-of-line) 
+    (combobulate-step "be on module" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module"))) 
+    (combobulate-step "move to MONAD" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_type_name"))) 
+    (combobulate-step "move to sig" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "sig"))) 
+    (search-forward "type") (back-to-indentation) 
+    (combobulate-step "move to type in the body" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type"))) 
+    (combobulate-step "move to 'a" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type_variable"))) 
+    (combobulate-step "move to t" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type_constructor"))) ))) 
+
 (provide 'test-ocaml-implementation-navigation) 
 ;;; test-ocaml-implementation-navigation.el ends here

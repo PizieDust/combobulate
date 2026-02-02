@@ -3507,5 +3507,350 @@
           (combobulate-node-type 
             (combobulate-node-at-point)) "type_constructor"))) ))) 
 
+(ert-deftest combobulate-test-ocaml-implementation-module-type-monad-3 () "Test in module type monad" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module type MONAD") (beginning-of-line) 
+    (combobulate-step "be on module" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module"))) 
+    (combobulate-step "move to MONAD" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_type_name"))) 
+    (combobulate-step "move to sig" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "sig"))) 
+    (search-forward "val") (back-to-indentation) 
+    (combobulate-step "move to val return in the body" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "val"))) 
+    (combobulate-step "move to return" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to 'a" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type_variable"))) 
+    (combobulate-step "move to second 'a" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type_variable"))) 
+    (combobulate-step "move to second t" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type_constructor"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-type-monad-4 () "Test in module type monad" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module type MONAD") (beginning-of-line) 
+    (combobulate-step "be on module" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module"))) 
+    (combobulate-step "move to MONAD" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_type_name"))) 
+    (combobulate-step "move to sig" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "sig"))) 
+    (search-forward "val") (back-to-indentation) 
+    (search-forward "val") (back-to-indentation) 
+    (combobulate-step "move to val bind in the body" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "val"))) 
+    (combobulate-step "move to return" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to 'a" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type_variable"))) 
+    (combobulate-step "move to second t" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type_constructor"))) 
+    (combobulate-step "move to (" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "("))) 
+    (combobulate-step "move to second 'a" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type_variable"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-class-rectangle () "Test in class rectangle" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "class rectangle") (beginning-of-line) 
+    (combobulate-step "be on class" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "class"))) 
+    (combobulate-step "move to rectangle" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "class_name"))) 
+    (combobulate-step "move to width" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to heigth" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to object" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "object"))) 
+    (combobulate-step "move to inherit" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "inherit"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-class-rectangle-b () "Test in class rectangle" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "class rectangle") (beginning-of-line) 
+    (combobulate-step "be on class" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "class"))) 
+    (combobulate-step "move to rectangle" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "class_name"))) 
+    (combobulate-step "move to width" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to heigth" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (search-forward "inherit") (back-to-indentation) 
+    (combobulate-step "be on inherit" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "inherit"))) 
+    (combobulate-step "move to shape" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "class_name"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-class-rectangle-c () "Test in class rectangle" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "class rectangle") (beginning-of-line) 
+    (combobulate-step "be on class" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "class"))) 
+    (combobulate-step "move to rectangle" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "class_name"))) 
+    (combobulate-step "move to width" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to heigth" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (search-forward "method") (back-to-indentation) 
+    (combobulate-step "be on method" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "method"))) 
+    (combobulate-step "move to area" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "method_name"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-class-rectangle-d () "Test in class rectangle" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "class rectangle") (beginning-of-line) 
+    (combobulate-step "be on class" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "class"))) 
+    (combobulate-step "move to rectangle" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "class_name"))) 
+    (combobulate-step "move to width" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to heigth" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (search-forward "inherit") (back-to-indentation) 
+    (combobulate-step "be on inherit" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "inherit"))) 
+    (combobulate-step "move to method" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "method"))) 
+    (combobulate-step "move to next method" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "method"))) 
+    (combobulate-step "move to previous method" 
+      (combobulate-navigate-previous) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "method"))) 
+    (combobulate-step "move to inherit" 
+      (combobulate-navigate-previous) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "inherit"))) ))) 
+
 (provide 'test-ocaml-implementation-navigation) 
 ;;; test-ocaml-implementation-navigation.el ends here

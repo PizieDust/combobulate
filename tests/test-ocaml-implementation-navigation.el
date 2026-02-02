@@ -3852,5 +3852,291 @@
           (combobulate-node-type 
             (combobulate-node-at-point)) "inherit"))) ))) 
 
+(ert-deftest combobulate-test-ocaml-implementation-module-positive () "Test in module positive" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module Positive") (beginning-of-line) 
+    (combobulate-step "be on module" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module"))) 
+    (combobulate-step "move to Positive" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_name"))) 
+    (combobulate-step "move to sig" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "sig"))) 
+    (combobulate-step "move to struct" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "struct"))) 
+    (combobulate-step "move back to sig" 
+      (combobulate-navigate-previous) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "sig"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-positive-b () "Test in module positive" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module Positive") (beginning-of-line) 
+    (combobulate-step "be on module" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module"))) 
+    (combobulate-step "move to Positive" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_name"))) 
+    (combobulate-step "move to sig" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "sig"))) 
+    (combobulate-step "move to type" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-positive-c () "Test in module positive" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module Positive") (beginning-of-line) 
+    (combobulate-step "be on module" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module"))) 
+    (combobulate-step "move to Positive" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_name"))) 
+    (combobulate-step "move to sig" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "sig"))) 
+    (combobulate-step "move to struct" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "struct"))) 
+    (combobulate-step "move to type in the body of struct" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "type"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-constants () "Test in module constants" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module Constants") (beginning-of-line) 
+    (combobulate-step "be on module" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module"))) 
+    (combobulate-step "move to Constants" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_name"))) 
+    (combobulate-step "move to struct" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "struct"))) 
+    (combobulate-step "move to let" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to the next let" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to the previous let" 
+      (combobulate-navigate-previous) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-math () "Test in module Math" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module Math") (beginning-of-line) 
+    (combobulate-step "be on module" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module"))) 
+    (combobulate-step "move to Math" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_name"))) 
+    (combobulate-step "move to struct" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "struct"))) 
+    (combobulate-step "move to let" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (search-forward "let all") (back-to-indentation) 
+    (combobulate-step "be on let all" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to all" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to x" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to the next x" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to *" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "mult_operator"))) 
+    (combobulate-step "move to the next x" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to +" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "add_operator"))) 
+    (combobulate-step "move to the next x" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to -" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "add_operator"))) 
+    (combobulate-step "move to the next x" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to /" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "mult_operator"))) 
+    (combobulate-step "move to the last x" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) ))) 
+
 (provide 'test-ocaml-implementation-navigation) 
 ;;; test-ocaml-implementation-navigation.el ends here

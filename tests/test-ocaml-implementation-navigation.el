@@ -3991,7 +3991,7 @@
     (insert-file-contents fixture-file) 
     (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
     (goto-char (point-min)) 
-    (re-search-forward "module Constants") (beginning-of-line) 
+    (re-search-forward "module Constants") (back-to-indentation) 
     (combobulate-step "be on module" 
       (should 
         (equal 
@@ -4137,6 +4137,224 @@
         (equal 
           (combobulate-node-type 
             (combobulate-node-at-point)) "value_name"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-module-compose () "Test in module compose" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "module Compose") (back-to-indentation) 
+    (combobulate-step "be on module" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module"))) 
+    (combobulate-step "move to Compose" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "module_name"))) 
+    (combobulate-step "move to struct" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "struct"))) 
+    (combobulate-step "move to let" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to (<|)" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "("))) 
+    (combobulate-step "move to f" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to g" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to x" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to the body f" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to the body of f which is (g(x))" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to the body of g(x) which is x" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-let-map-pair () "Test in let map_pair" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "let map_pair") (beginning-of-line) 
+    (combobulate-step "be on let" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to map_pair" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to f" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to (" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "("))) 
+    (combobulate-step "move to x in (x,y)" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-let-add () "Test in let add" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "let add") (beginning-of-line) 
+    (combobulate-step "be on let" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to add" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to x" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to y" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_pattern"))) 
+    (combobulate-step "move to x in the body" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to + in x + y" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "add_operator"))) 
+    (combobulate-step "move to y in x + y" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) ))) 
+
+(ert-deftest combobulate-test-ocaml-implementation-let-add-five () "Test in let add_five" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(let 
+  ( 
+    (fixture-file 
+      (expand-file-name "fixtures/imenu/demo.ml" default-directory))) 
+  (with-temp-buffer 
+    (insert-file-contents fixture-file) 
+    (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
+    (goto-char (point-min)) 
+    (re-search-forward "let add_five") (beginning-of-line) 
+    (combobulate-step "be on let" 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "let"))) 
+    (combobulate-step "move to add_five" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to the body and be on add" 
+      (combobulate-navigate-down) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "value_name"))) 
+    (combobulate-step "move to 5" 
+      (combobulate-navigate-next) 
+      (should 
+        (equal 
+          (combobulate-node-type 
+            (combobulate-node-at-point)) "number"))) ))) 
 
 (provide 'test-ocaml-implementation-navigation) 
 ;;; test-ocaml-implementation-navigation.el ends here

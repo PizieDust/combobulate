@@ -149,7 +149,9 @@
       (pretty-print-node-name-function #'combobulate-ocaml-pretty-print-node-name)
 
       ;; Plausible separators between items, probably comma and semi-colon?
-      (plausible-separators '(";" ",", "|", "struct", "sig", "end", "begin", "{", "}"))
+      (plausible-separators '(";" "," "|" "struct" "sig" "end" "begin" "{" "}"))
+
+      (display-ignored-node-types '("let" "module" "struct" "sig" "external" "val" "type" "class" "exception" "open" "include"))
 
       ;; This is a list of procedures that determine what a defun is.
       ;; In OCaml it is any _definition node. Select the defun using C-M-h
@@ -218,6 +220,7 @@
           (:activation-nodes
           ((:nodes (
             "attribute" "field_declaration"
+            (rule "function_type")
             (rule "attribute_payload")
             (rule "object_expression")
             (rule "constructor_declaration")
@@ -281,34 +284,22 @@
         ;; part of the problem.
 
         ;; Navigate from class_definition through its children
+
         (:activation-nodes
-         ((:nodes ((rule "class_definition"))))
+         ((:nodes ("object_expression" (rule "class_definition") (rule "object_expression") (rule "class_binding"))))
          :selector (:choose node
                             :match-children t))
-
-        ;; From class_binding through its children (including parameters)
-        ;; NOTE: Attempts to use :discard-rules here to skip parameters do not work
-        (:activation-nodes
-         ((:nodes ((rule "class_binding"))))
-         :selector (:choose node
-                            :match-children t))
-
-        ;; From object_expression to instance variable and method definitions
-        (:activation-nodes
-          ((:nodes ((rule "object_expression"))))
-          :selector (:choose node
-                             :match-children t))
 
         ;; Catch-all for structural nodes - match all their children
         (:activation-nodes
         ((:nodes ("parameter" "value_path")))
         :selector
         (:choose node
-        :match-siblings t))
+        :match-children t))
 
         (:activation-nodes
           (
-            (:nodes ("signature" "structure" "module_name") :has-ancestor ("module_definition"))
+            (:nodes ("signature" "structure" "module_name" "module_path") :has-ancestor ("module_definition"))
             (:nodes (
             (rule "module_definition")
             (rule "attribute_payload")
@@ -484,7 +475,8 @@
                 ("Include Sig" "include_module_type" nil combobulate-ocaml-imenu-name-function)
                 ("Value Spec" "value_specification" nil combobulate-ocaml-imenu-name-function)))
   ;; Use tree-sitter based imenu (treesit-simple-imenu creates the index from the settings above)
-  (setq-local imenu-create-index-function #'treesit-simple-imenu))
+  (setq-local imenu-create-index-function #'treesit-simple-imenu)
+  (setq-local combobulate-navigate-down-into-lists nil))
 
 (provide 'combobulate-ocaml)
 ;;; combobulate-ocaml.el ends here

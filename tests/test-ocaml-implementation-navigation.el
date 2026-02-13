@@ -2501,7 +2501,7 @@
         (message "1.0 Expected: %s. got %s" expected actual)) 
       (should 
         (equal expected actual)) ) 
-    (combobulate-step "C-M-d should move to new_function" 
+    (combobulate-step "C-M-d should move to get_time" 
       (combobulate-navigate-down) 
       (let* 
         ( 
@@ -2545,8 +2545,8 @@
           (message "3.1 C-M-d - Expected: %s. got %s" expected actual)) 
         (should 
           (equal expected actual)) ) ) 
-    (combobulate-step "navigate down should move to float" 
-      (combobulate-navigate-down) 
+    (combobulate-step "navigate next should move to float" 
+      (combobulate-navigate-next) 
       (let* 
         ( 
           (actual 
@@ -2567,8 +2567,8 @@
           (message "4.1 C-M-d - Expected: %s. got %s" expected actual)) 
         (should 
           (equal expected actual)) ) ) 
-    (combobulate-step "navigate down should move to @@" 
-      (combobulate-navigate-down) 
+    (combobulate-step "navigate next should move to @@" 
+      (combobulate-navigate-next) 
       (let* 
         ( 
           (actual 
@@ -2779,7 +2779,7 @@
           (equal expected actual) 
           (message "8.0 C-M-n - Expected: %s. got %s" expected actual)) 
         (should 
-          (equal expected actual)) ) (forward-word) (forward-word) 
+          (equal expected actual)) ) (forward-word 2) 
       (let* 
         ( 
           (actual 
@@ -2790,6 +2790,7 @@
           (message "8.1 C-M-n - Expected: %s. got %s" expected actual)) 
         (should 
           (equal expected actual)) ) ) 
+    (backward-word 2) 
     (combobulate-step "navigate prev should go back to module Numeros" 
       (combobulate-navigate-previous) 
       (let* 
@@ -2801,7 +2802,8 @@
           (equal expected actual) 
           (message "9.0 C-M-p - Expected: %s. got %s" expected actual)) 
         (should 
-          (equal expected actual)) ) (forward-word) (forward-word) 
+          (equal expected actual)) ) (forward-word 2)
+        (message "word is %s" (thing-at-point 'word 'no-properties))
       (let* 
         ( 
           (actual 
@@ -2811,6 +2813,7 @@
           (message "9.1 C-M-p - Expected: %s. got %s" expected actual)) 
         (should 
           (equal expected actual)) ) ) 
+    (backward-word 2) 
     (combobulate-step "navigate prev should go back to let ville" 
       (combobulate-navigate-previous) 
       (let* 
@@ -2822,7 +2825,7 @@
           (equal expected actual) 
           (message "10.0 C-M-p - Expected: %s. got %s" expected actual)) 
         (should 
-          (equal expected actual)) ) (forward-word) (forward-word) 
+          (equal expected actual)) ) (forward-word 2) 
       (let* 
         ( 
           (actual 
@@ -2832,6 +2835,7 @@
           (message "10.1 C-M-p - Expected: %s. got %s" expected actual)) 
         (should 
           (equal expected actual)) ) ) 
+    (backward-word 2) 
     (combobulate-step "navigate prev should go back to let age" 
       (combobulate-navigate-previous) 
       (let* 
@@ -2843,7 +2847,7 @@
           (equal expected actual) 
           (message "11.0 C-M-p - Expected: %s. got %s" expected actual)) 
         (should 
-          (equal expected actual)) ) (forward-word) (forward-word) 
+          (equal expected actual)) ) (forward-word 2) 
       (let* 
         ( 
           (actual 
@@ -2853,6 +2857,7 @@
           (message "11.1 C-M-p - Expected: %s. got %s" expected actual)) 
         (should 
           (equal expected actual)) ) ) 
+    (backward-word 2) 
     (combobulate-step "navigate prev should go back to let prenom" 
       (combobulate-navigate-previous) 
       (let* 
@@ -2864,7 +2869,7 @@
           (equal expected actual) 
           (message "12.0 C-M-p - Expected: %s. got %s" expected actual)) 
         (should 
-          (equal expected actual)) ) (forward-word) (forward-word) 
+          (equal expected actual)) ) (forward-word 2) 
       (let* 
         ( 
           (actual 
@@ -2874,6 +2879,7 @@
           (message "12.1 C-M-p - Expected: %s. got %s" expected actual)) 
         (should 
           (equal expected actual)) ) ) 
+    (backward-word 2) 
     (combobulate-step "navigate prev should go stay on let prenom" 
       (combobulate-navigate-previous) 
       (let* 
@@ -3670,12 +3676,13 @@
           (combobulate-node-type 
             (combobulate-node-at-point)) "value_pattern"))) 
     (combobulate-step "move to heigth" 
+      (combobulate-navigate-next)
       (should 
         (equal 
           (combobulate-node-type 
             (combobulate-node-at-point)) "value_pattern"))) 
     (combobulate-step "move to object" 
-      (combobulate-navigate-down) 
+      (combobulate-navigate-next) 
       (should 
         (equal 
           (combobulate-node-type 
@@ -4084,7 +4091,7 @@
           (combobulate-node-type 
             (combobulate-node-at-point)) "value_pattern"))) 
     (combobulate-step "move to the next x" 
-      (combobulate-navigate-down) 
+      (combobulate-navigate-next) 
       (should 
         (equal 
           (combobulate-node-type 
@@ -4200,7 +4207,7 @@
           (combobulate-node-type 
             (combobulate-node-at-point)) "value_pattern"))) 
     (combobulate-step "move to the body f" 
-      (combobulate-navigate-down) 
+      (combobulate-navigate-next) 
       (should 
         (equal 
           (combobulate-node-type 
@@ -4275,7 +4282,7 @@
     (insert-file-contents fixture-file) 
     (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
     (goto-char (point-min)) 
-    (re-search-forward "let add") (beginning-of-line) 
+    (re-search-forward "let add") (back-to-indentation) 
     (combobulate-step "be on let" 
       (should 
         (equal 

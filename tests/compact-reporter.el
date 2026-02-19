@@ -38,7 +38,8 @@
 
 (defun combobulate-run-tests-compact (selector) "Run tests matched by SELECTOR and print compact report." (setq ert-quiet t) 
   (let* 
-    ((inhibit-message t) 
+    (
+      ;; (inhibit-message t) 
       (combobulate--test-results nil) ; Bind locally
  
       (stats 

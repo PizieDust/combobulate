@@ -757,7 +757,6 @@
 
 (skip-unless 
   (treesit-language-available-p 'ocaml)) 
-
 (let 
   ( 
     (fixture-file 
@@ -766,7 +765,8 @@
     (insert-file-contents fixture-file) 
     (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
     (goto-char (point-min)) 
-    (re-search-forward "type address") (beginning-of-line) 
+    (re-search-forward "type address") (back-to-indentation) 
+    (message "Starting point: %s %s" (combobulate-node-type (combobulate-node-at-point)) (forward-word 2) (thing-at-point 'word 'no-properties))
     (combobulate-step "Move point onto street field" 
       (re-search-forward "street") 
       (goto-char (match-beginning 0)) 
@@ -1743,7 +1743,7 @@
           (equal expected actual) 
           (message "2.0 C-M-n - Expected: %s. got %s" expected actual)) 
         (should 
-          (equal expected actual)) ) (forward-word) (forward-word) 
+          (equal expected actual)) ) (forward-word 2) 
       (let* 
         ( 
           (actual 
@@ -1753,6 +1753,7 @@
           (message "2.1 C-M-n - Expected: %s. got %s" expected actual)) 
         (should 
           (equal expected actual)) ) ) 
+    (backward-word 2) 
     (combobulate-step "navigate next should move to let multiply" 
       (combobulate-navigate-next) 
       (let* 
@@ -1764,7 +1765,7 @@
           (equal expected actual) 
           (message "3.0 C-M-n - Expected: %s. got %s" expected actual)) 
         (should 
-          (equal expected actual)) ) (forward-word) (forward-word) 
+          (equal expected actual)) ) (forward-word 2) 
       (let* 
         ( 
           (actual 
@@ -1774,6 +1775,7 @@
           (message "3.1 C-M-n - Expected: %s. got %s" expected actual)) 
         (should 
           (equal expected actual)) ) ) 
+    (backward-word 2) 
     (combobulate-step "C-M-p should move to let add" 
       (combobulate-navigate-previous) 
       (let* 
@@ -3625,7 +3627,7 @@
         (equal 
           (combobulate-node-type 
             (combobulate-node-at-point)) "type_variable"))) 
-    (combobulate-step "move to second t" 
+    (combobulate-step "move to t" 
       (combobulate-navigate-down) 
       (should 
         (equal 

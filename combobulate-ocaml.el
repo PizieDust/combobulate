@@ -184,20 +184,26 @@
          ;; ask Combobulate to give you all the node types that can appear in it:
 
          (:activation-nodes
+          ((:nodes ("tag_specification")))
+          :selector
+          (:choose node
+          :match-siblings t))
+
+         (:activation-nodes
           ((:nodes ("match_case")))
           :selector
           (:choose node
           :match-siblings (:discard-rules ("value_path"))))
 
          (:activation-nodes
-          ((:nodes ("value_definition" "application_expression")
+          ((:nodes ("value_definition" "application_expression" "let_expression")
             :has-parent ("let_expression")))
           :selector
           (:choose parent
           :match-children t))
 
           (:activation-nodes
-          ((:nodes ("parameter" "value_path")))
+          ((:nodes ("parameter" "value_path" "add_operator" "mult_operator" "pow_operator" "rel_oparator" "concat_oparator" "or_oparator" "and_operator" "assign_operator" "infix_expression" "type_constructor_path" "field_declaration")))
           :selector
           (:choose node
           :match-siblings t))
@@ -209,7 +215,7 @@
 
          (:activation-nodes
           ((:nodes (
-            "variant_declaration" "record_declaration")))
+            "variant_declaration" "record_declaration") :nodes ((rule "function_type"))))
           :selector (:choose node :match-children t))
 
           (:activation-nodes
@@ -219,7 +225,7 @@
 
           (:activation-nodes
           ((:nodes (
-            "attribute" "field_declaration"
+            "attribute" "field_declaration" "function_expression"
             (rule "function_type")
             (rule "attribute_payload")
             (rule "object_expression")
@@ -286,9 +292,14 @@
         ;; Navigate from class_definition through its children
 
         (:activation-nodes
-         ((:nodes ("object_expression" (rule "class_definition") (rule "object_expression") (rule "class_binding"))))
+         ((:nodes ((rule "polymorphic_variant_type"))))
          :selector (:choose node
                             :match-children t))
+
+        (:activation-nodes
+         ((:nodes ("object_expression" (rule "class_definition") (rule "object_expression") (rule "class_binding"))))
+         :selector (:choose node
+                            :match-children (:discard-rules ("tag_specification"))))
 
         ;; Catch-all for structural nodes - match all their children
         (:activation-nodes
@@ -299,10 +310,11 @@
 
         (:activation-nodes
           (
-            (:nodes ("signature" "structure" "module_name" "module_path") :has-ancestor ("module_definition"))
+            (:nodes ("signature" "structure" "module_name" "module_path") :has-ancestor ("module_definition" "module_type_definition"))
             (:nodes (
             (rule "module_definition")
             (rule "attribute_payload")
+            (rule "function_type")
             (irule "function_type")
             (irule "set_expression")
             (irule "infix_expression")

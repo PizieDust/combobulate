@@ -3,11 +3,6 @@
 
 (defvar combobulate--test-results nil "List of test results collected during execution.") 
 
-(defmacro combobulate-step (name &rest body) "Wrap BODY as a test step named NAME. If failure occurs, the step name is included in the failure report." (declare (indent 1)) `(condition-case err (progn ,@body) 
-  (ert-test-failed 
-    (signal (car err) 
-      (append (cdr err) (list :step ,name)))))) 
-
 (defun combobulate-compact-listener 
   (event-type &rest event-args) "ERT listener for compact output. EVENT-TYPE is the type of event. EVENT-ARGS are the arguments for the event." 
   (pcase event-type 

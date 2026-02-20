@@ -30,6 +30,11 @@
 (require 'combobulate-manipulation)
 (require 'combobulate-rules)
 
+(defmacro combobulate-step (name &rest body) "Wrap BODY as a test step named NAME. If failure occurs, the step name is included in the failure report." (declare (indent 1)) `(condition-case err (progn ,@body) 
+  (ert-test-failed 
+    (signal (car err) 
+      (append (cdr err) (list :step ,name)))))) 
+
 (defgroup combobulate-ocaml nil
   "Configuration switches for OCaml"
   :group 'combobulate

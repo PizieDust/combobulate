@@ -766,10 +766,10 @@
     (setq buffer-file-name fixture-file) (tuareg-mode) (combobulate-mode) (sit-for 0.1) 
     (goto-char (point-min)) 
     (re-search-forward "type address") (back-to-indentation) 
-    (message "Starting point: %s %s" (combobulate-node-type (combobulate-node-at-point)) (forward-word 2) (thing-at-point 'word 'no-properties))
     (combobulate-step "Move point onto street field" 
-      (re-search-forward "street") 
-      (goto-char (match-beginning 0)) 
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
       (let* 
         ( 
           (actual 
@@ -797,7 +797,7 @@
       (let* 
         ( 
           (actual 
-            (thing-at-point 'word 'no-properties) (expected "number"))) 
+            (thing-at-point 'word 'no-properties)) (expected "number")) 
         (unless 
           (equal expected actual) 
           (message "2.1 C-M-n - Expected: %s. got %s" expected actual)) 

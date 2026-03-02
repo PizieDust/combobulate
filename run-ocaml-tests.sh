@@ -78,7 +78,7 @@ case $TEST_TYPE in
         ;;
     all)
         echo "Running all OCaml tests..."
-        TEST_FILES="-l test-ocaml-imenu.el -l test-ocaml-implementation-navigation.el -l test-ocaml-interface-navigation.el"
+        TEST_FILES="-l test-ocaml-imenu.el -l test-ocaml-implementation-navigation-xvw.el -l test-ocaml-interface-navigation.el"
         # Add generated test files if they exist
         for gentest in test-combobulate-navigate-next.gen.el test-combobulate-navigate-previous.gen.el test-combobulate-navigate-down.gen.el test-combobulate-drag-up.gen.el test-combobulate-drag-down.gen.el; do
             if [ -f "tests/$gentest" ]; then

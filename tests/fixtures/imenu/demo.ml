@@ -3,6 +3,8 @@
 (* Simple polymorphic variant *)
 type color = [ `Red | `Green | `Blue | `RGB of int * int * int ]
 
+type color_2 = [ `Red | `Green | `Blue | `RGB of int * string * bool ]
+
 (* Polymorphic variant with inheritance *)
 type basic_color = [ `Red | `Green | `Blue ]
 type extended_color = [ basic_color | `Yellow | `Orange ]

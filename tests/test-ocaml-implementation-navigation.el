@@ -2363,7 +2363,7 @@ matching for OCaml can be resolved."
       "move to 5"
       (combobulate-navigate-next)
       (expected-node-type "number")))))
-(ert-deftest combobulate-test-ocaml-implementation-type-color-rgb () "Test in type color last `RGB variant" :tags '(ocaml implementation navigation combobulate) 
+(ert-deftest combobulate-test-ocaml-implementation-type-color-rgb () "Test in type color last `RGB variant" :tags '(ocaml implementation navigation combobulate navi) 
 
 (skip-unless 
   (treesit-language-available-p 'ocaml)) 
@@ -2373,18 +2373,20 @@ matching for OCaml can be resolved."
 (with-tuareg-buffer
    (lambda () 
     (goto-char (point-min)) 
-    (re-search-forward "type color") (beginning-of-line) 
+    (re-search-forward "type color_2") (beginning-of-line) 
     (combobulate-step "navigate to RGB variant" 
       (search-forward "RGB")
       (expected-node-type "tag_specification")) 
     (combobulate-step "jump to first int" 
       (combobulate-navigate-down)
       (expected-node-type "type_constructor")) 
-    (combobulate-step "move to second int" 
+    (combobulate-step "move to string" 
       (combobulate-navigate-next) 
+      (expected-thing-at-point "string")
       (expected-node-type "type_constructor")) 
-    (combobulate-step "move to last int" 
+    (combobulate-step "move to bool" 
       (combobulate-navigate-next) 
+      (expected-thing-at-point "bool")
       (expected-node-type "type_constructor")) 
    )))
 
@@ -3121,6 +3123,6 @@ matching for OCaml can be resolved."
       (combobulate-navigate-next)
       (expected-node-type "type_variable"))
   )))
-  
+
 (provide 'test-ocaml-implementation-navigation)
 ;;; test-ocaml-implementation-navigation.el ends here

@@ -2363,6 +2363,764 @@ matching for OCaml can be resolved."
       "move to 5"
       (combobulate-navigate-next)
       (expected-node-type "number")))))
+(ert-deftest combobulate-test-ocaml-implementation-type-color-rgb () "Test in type color last `RGB variant" :tags '(ocaml implementation navigation combobulate) 
 
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+  ;; This test passes but it is incorrect. The cursor stays on the same int and does not move to the next one. Given they are all same nodes, the expected node type passes but the navigation does not happen.
+
+(with-tuareg-buffer
+   (lambda () 
+    (goto-char (point-min)) 
+    (re-search-forward "type color") (beginning-of-line) 
+    (combobulate-step "navigate to RGB variant" 
+      (search-forward "RGB")
+      (expected-node-type "tag_specification")) 
+    (combobulate-step "jump to first int" 
+      (combobulate-navigate-down)
+      (expected-node-type "type_constructor")) 
+    (combobulate-step "move to second int" 
+      (combobulate-navigate-next) 
+      (expected-node-type "type_constructor")) 
+    (combobulate-step "move to last int" 
+      (combobulate-navigate-next) 
+      (expected-node-type "type_constructor")) 
+   )))
+
+
+
+(ert-deftest combobulate-test-ocaml-implementation-let-numbers () "Test in let numbers" :tags '(ocaml implementation navigation combobulate) 
+
+(skip-unless 
+  (treesit-language-available-p 'ocaml)) 
+
+(with-tuareg-buffer
+   (lambda () 
+    (goto-char (point-min)) 
+    (re-search-forward "let numbers") (back-to-indentation) 
+    (combobulate-step "be on let" 
+      (expected-node-type "let")) 
+    (combobulate-step "move to numbers" 
+      (combobulate-navigate-down) 
+      (expected-node-type "value_name")) 
+    (combobulate-step "move to first element in the list: 1" 
+      (combobulate-navigate-down) 
+      (combobulate-navigate-down) 
+      (expected-node-type "number")
+      (expected-symbol-at-point "1")) 
+    (combobulate-step "move to second element in the list: 2" 
+      (combobulate-navigate-next) 
+      (expected-node-type "number")
+      (expected-symbol-at-point "2"))
+    (combobulate-step "move to third element in the list: 3" 
+      (combobulate-navigate-next) 
+      (expected-node-type "number")
+      (expected-symbol-at-point "3"))
+    (combobulate-step "move back to the second element in the list: 2" 
+      (combobulate-navigate-previous) 
+      (expected-node-type "number")
+      (expected-symbol-at-point "2"))
+   )))
+
+(ert-deftest combobulate-test-ocaml-implementation-closed-polymorphic-variant-h-navigation ()
+  "Test hierarchy navigation in closed polymorphic variants (string_to_color)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "let string_to_color s : ")
+     (back-to-indentation)
+     (combobulate-step "be on let"
+      (expected-node-type "let"))
+     (combobulate-step "move to string_to_color"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+     (combobulate-step "move to s"
+      (combobulate-navigate-down)
+      (expected-node-type "value_pattern"))
+     (combobulate-step "move to s"
+      (combobulate-navigate-down)
+      (expected-node-type "value_pattern"))
+     (combobulate-step "move to [<"
+      (combobulate-navigate-next)
+      (expected-node-type "[<"))
+      ;; normally this move should go to the match statement but it doesnt.
+    (combobulate-step "move to the sibling: option"
+      (combobulate-navigate-next)
+      (expected-node-type "type_constructor"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-closed-polymorphic-variant-s-navigation ()
+  "Test sibling navigation in closed polymorphic variants (string_to_color pattern matching)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "match s with")
+     (back-to-indentation)
+     (combobulate-step "be on match"
+      (expected-node-type "match"))
+    (combobulate-step "go to previous sibling: [<"
+      (combobulate-navigate-previous)
+      (expected-node-type "[<"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-class-counter-instance-variables-h-navigation ()
+  "Test hierarchy navigation for methods in class counter."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "class counter = object")
+     (back-to-indentation)
+     (combobulate-step "be on class"
+      (expected-node-type "class"))
+     (combobulate-step "move to counter"
+      (combobulate-navigate-down)
+      (expected-node-type "class_name"))
+     (combobulate-step "move to object"
+       (combobulate-navigate-next)
+       (expected-node-type "object"))
+      (combobulate-step "move to val mutable count = 0"
+       (combobulate-navigate-down)
+       (expected-node-type "val"))
+      (combobulate-step "move to method increment"
+       (combobulate-navigate-next)
+       (expected-node-type "method"))
+      (combobulate-step "move to increment"
+       (combobulate-navigate-down)
+       (expected-node-type "method_name"))
+      (combobulate-step "move to increments body"
+       (combobulate-navigate-next)
+       (expected-node-type "instance_variable_name"))
+      (combobulate-step "move to count + 1"
+       (combobulate-navigate-next)
+       (expected-node-type "value_name"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-class-counter-methods-s-navigation ()
+  "Test sibling navigation for methods in class counter."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "class counter = object")
+     (back-to-indentation)
+     (combobulate-step "be on class"
+      (expected-node-type "class"))
+     (combobulate-step "move to counter"
+      (combobulate-navigate-down)
+      (expected-node-type "class_name"))
+     (combobulate-step "move to object"
+       (combobulate-navigate-next)
+       (expected-node-type "object"))
+      (combobulate-step "move to val mutable count = 0"
+       (combobulate-navigate-down)
+       (expected-node-type "val"))
+      (combobulate-step "move to method increment"
+       (combobulate-navigate-next)
+       (expected-node-type "method"))
+      (combobulate-step "move to method get_count"
+       (combobulate-navigate-next)
+       (expected-node-type "method"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-gadts-type-declaration-navigation ()
+  "Test navigation for GADTs type declaration (type _ expression)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "type _ expression =")
+     (back-to-indentation)
+      (combobulate-step "be on type"
+        (expected-node-type "type"))
+      (combobulate-step "move to _"
+        (combobulate-navigate-down)
+        (expected-node-type "type_variable"))
+      (combobulate-step "move to expression"
+        (combobulate-navigate-down)
+        (expected-node-type "type_constructor"))
+      (combobulate-step "move to the body"
+        (combobulate-navigate-next)
+        (expected-node-type "|"))
+      (combobulate-step "move to Int"
+        (combobulate-navigate-next)
+        (expected-node-type "constructor_name"))
+      (combobulate-step "move to Bool"
+        (combobulate-navigate-next)
+        (expected-node-type "constructor_name"))
+      (combobulate-step "move to Add"
+        (combobulate-navigate-next)
+        (expected-node-type "constructor_name"))
+      (combobulate-step "move to Eq"
+        (combobulate-navigate-next)
+        (expected-node-type "constructor_name"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-gadts-type-declaration-h-navigation ()
+  "Test hierarchy navigation for GADTs type declaration (type _ expression)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "type _ expression =")
+     (back-to-indentation)
+      (combobulate-step "be on type"
+        (expected-node-type "type"))
+      (combobulate-step "move to _"
+        (combobulate-navigate-down)
+        (expected-node-type "type_variable"))
+      (combobulate-step "move to expression"
+        (combobulate-navigate-down)
+        (expected-node-type "type_constructor"))
+      (combobulate-step "move to the body"
+        (combobulate-navigate-next)
+        (expected-node-type "|"))
+      (combobulate-step "move to Int"
+        (combobulate-navigate-next)
+        (expected-node-type "constructor_name"))
+        ;; this should move to the int in the body but it doesnt an rather moves to the next sibling
+      (combobulate-step "move to the body of Int"
+        (combobulate-navigate-down)
+        (expected-node-type "type_constructor"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-gadts-pattern-matching-navigation ()
+  "Test sibling navigation for GADTs pattern matching (let rec eval)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "let rec eval : type a.")
+     (back-to-indentation)
+     (combobulate-step "be on let"
+      (expected-node-type "let"))
+     (combobulate-step "move to eval"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+     (combobulate-step "move to function"
+      (combobulate-navigate-next)
+      (expected-node-type "function"))
+     )))
+
+  (ert-deftest combobulate-test-ocaml-implementation-gadts-pattern-matching-s-navigation ()
+  "Test sibling navigation for GADTs pattern matching (let rec eval)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "let rec eval : type a.")
+     (re-search-forward "function")
+     (back-to-indentation)
+     (combobulate-step "be on function"
+      (expected-node-type "function"))
+     (combobulate-step "move to first match case"
+      (combobulate-navigate-down)
+      (expected-node-type "constructor_name"))
+     (combobulate-step "move to second match case"
+      (combobulate-navigate-next)
+      (expected-node-type "constructor_name"))
+     (combobulate-step "move to third match case"
+      (combobulate-navigate-next)
+      (expected-node-type "constructor_name"))
+     (combobulate-step "move back to the second match case"
+      (combobulate-navigate-previous)
+      (expected-node-type "constructor_name"))
+     )))
+
+
+  (ert-deftest combobulate-test-ocaml-implementation-gadts-pattern-matching-h-navigation-a ()
+  "Test hierarchy navigation for GADTs pattern matching (let rec eval)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "let rec eval : type a.")
+     (re-search-forward "function")
+     (back-to-indentation)
+     (combobulate-step "be on function"
+      (expected-node-type "function"))
+     (combobulate-step "move to first match case"
+      (combobulate-navigate-down)
+      (expected-node-type "constructor_name"))
+      (combobulate-step "move to the pattern of the first match case"
+        (combobulate-navigate-down)
+        (expected-node-type "value_pattern"))
+      (combobulate-step "move to the n"
+        (combobulate-navigate-next)
+        (expected-node-type "value_name"))
+     )))
+
+  (ert-deftest combobulate-test-ocaml-implementation-gadts-pattern-matching-h-navigation-b ()
+  "Test hierarchy navigation for GADTs pattern matching (let rec eval)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "let rec eval : type a.")
+     (re-search-forward "Bool")
+     (back-to-indentation)
+     (combobulate-step "be on |"
+      (expected-node-type "|"))
+     (combobulate-step "be on Add"
+      (combobulate-navigate-down)
+      (expected-node-type "constructor_name"))
+     (combobulate-step "move to b"
+      (combobulate-navigate-down)
+      (expected-node-type "value_pattern"))
+      (combobulate-step "move to the second b"
+        (combobulate-navigate-down)
+        (expected-node-type "value_name"))
+     )))
+
+  (ert-deftest combobulate-test-ocaml-implementation-gadts-pattern-matching-h-navigation-c ()
+  "Test hierarchy navigation for GADTs pattern matching (let rec eval)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "let rec eval : type a.")
+     (re-search-forward "Add")
+     (back-to-indentation)
+     (combobulate-step "be on |"
+      (expected-node-type "|"))
+     (combobulate-step "be on Add"
+      (combobulate-navigate-down)
+      (expected-node-type "constructor_name"))
+     (combobulate-step "move to (e1,e2)"
+      (combobulate-navigate-down)
+      (expected-node-type "("))
+     (combobulate-step "move to the first e1"
+        (combobulate-navigate-down)
+        (expected-node-type "value_pattern"))
+     (combobulate-step "move to the first e2"
+        (combobulate-navigate-down)
+        (expected-node-type "constructor_pattern"))
+     )))
+
+  (ert-deftest combobulate-test-ocaml-implementation-gadts-pattern-matching-h-navigation-c-2 ()
+  "Test hierarchy navigation for GADTs pattern matching (let rec eval)."
+  :tags '(ocaml implementation navigation combobulate navi)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "let rec eval : type a.")
+     (re-search-forward "Add")
+     (back-to-indentation)
+     (combobulate-step "be on |"
+      (expected-node-type "|"))
+     (combobulate-step "be on Add"
+      (combobulate-navigate-down)
+      (expected-node-type "constructor_name"))
+     (combobulate-step "move to (e1,e2)"
+      (combobulate-navigate-down)
+      (expected-node-type "("))
+     (combobulate-step "move to eval"
+        (combobulate-navigate-next)
+        (expected-node-type "value_name"))
+     (combobulate-step "move to e1"
+        (combobulate-navigate-down)
+        (expected-node-type "value_name"))
+     (combobulate-step "move back to eval"
+        (combobulate-navigate-up)
+        (expected-node-type "value_name"))
+      (combobulate-step "move to the second eval"
+        (combobulate-navigate-next)
+        (expected-node-type "value_name"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-first-class-modules-type-navigation ()
+  "Test hierarchy navigation for first-class modules (module type SHOW)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "module type SHOW = sig")
+     (back-to-indentation)
+     (combobulate-step "be on module type"
+      (expected-node-type "module"))
+     (combobulate-step "move to SHOW"
+      (combobulate-navigate-down)
+      (expected-node-type "module_type_name"))
+     (combobulate-step "move to sig"
+      (combobulate-navigate-down)
+      (expected-node-type "sig"))
+     (combobulate-step "move to type t"
+      (combobulate-navigate-down)
+      (expected-node-type "type"))
+     (combobulate-step "move to t"
+      (combobulate-navigate-down)
+      (expected-node-type "type_constructor"))
+     (combobulate-step "move back to type"
+      (combobulate-navigate-up)
+      (expected-node-type "type"))
+     (combobulate-step "move to val"
+       (combobulate-navigate-next)
+       (expected-node-type "val"))
+     (combobulate-step "move to show"
+       (combobulate-navigate-down)
+       (expected-node-type "value_name"))
+     (combobulate-step "move to t"
+       (combobulate-navigate-down)
+       (expected-node-type "type_constructor"))
+     (combobulate-step "move to string"
+       (combobulate-navigate-next)
+       (expected-node-type "type_constructor"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-first-class-modules-unpack-navigation ()
+  "Test sibling navigation for unpacking first-class modules (let int_show)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "let int_show = (module struct")
+     (back-to-indentation)
+     (combobulate-step "be on let"
+      (expected-node-type "let"))
+     (combobulate-step "move to int_show"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+      (combobulate-step "move to (module struct"
+        (combobulate-navigate-down)
+        (expected-node-type "("))
+      (combobulate-step "move to struct"
+        (combobulate-navigate-down)
+        (expected-node-type "struct"))
+      (combobulate-step "move to the body of struct: type t"
+        (combobulate-navigate-down)
+        (expected-node-type "type"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-first-class-modules-unpack-navigation-2 ()
+  "Test sibling navigation for unpacking first-class modules (let int_show)."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "let int_show = (module struct")
+     (back-to-indentation)
+     (combobulate-step "be on let"
+      (expected-node-type "let"))
+     (combobulate-step "move to int_show"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+      (combobulate-step "move to (module struct"
+        (combobulate-navigate-down)
+        (expected-node-type "("))
+      (combobulate-step "move to struct"
+        (combobulate-navigate-down)
+        (expected-node-type "struct"))
+      (combobulate-step "move to the sibling of struct"
+        (combobulate-navigate-next)
+        (expected-node-type "module_type_name"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-nested-modules-collections-list-ops ()
+  "Test sibling navigation inside Collections.List.Ops."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "module Collections = struct")
+     (back-to-indentation)
+     (combobulate-step "be on module"
+      (expected-node-type "module"))
+     (combobulate-step "move to module List"
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (expected-node-type "module"))
+     (combobulate-step "move to module Ops"
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (expected-node-type "module"))
+     (combobulate-step "move to the body of module Ops"
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (expected-node-type "let"))
+     (combobulate-step "move to the next sibling: let rec drop"
+      (combobulate-navigate-next)
+      (expected-node-type "let"))
+     (combobulate-step "move to the next sibling: let slit_at"
+      (combobulate-navigate-next)
+      (expected-node-type "let"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-nested-modules-collections-list-ops-2 ()
+  "Test hierarchy navigation inside Collections.List.Ops."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "module Ops = struct")
+     (back-to-indentation)
+     (combobulate-step "be on module"
+      (expected-node-type "module"))
+     (combobulate-step "move to the body of module Ops"
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (expected-node-type "let"))
+     (combobulate-step "move to the body of let rect take"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+     (combobulate-step "move to the match statement"
+      (combobulate-navigate-down)
+      (combobulate-navigate-next)
+      (combobulate-navigate-next)
+      (expected-node-type "match"))
+      ;; Tricky point, to move to the body should take us to the match cases, but then how do we move to the parameters of the match statement. the next step should fail as this doesnt go to the parameters
+     (combobulate-step "move to the match parameters"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+     )))
+  
+(ert-deftest combobulate-test-ocaml-implementation-nested-modules-collections-list-ops-3 ()
+  "Test hierarchy navigation inside Collections.List.Ops."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "module Ops = struct")
+     (back-to-indentation)
+     (combobulate-step "be on module"
+      (expected-node-type "module"))
+     (combobulate-step "move to the body of module Ops"
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (expected-node-type "let"))
+     (combobulate-step "move to the body of let rect take"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+     (combobulate-step "move to the match statement"
+      (combobulate-navigate-down)
+      (combobulate-navigate-next)
+      (combobulate-navigate-next)
+      (expected-node-type "match"))
+      ;; We should go to the parameters but for now, we go to the body of the match
+     (combobulate-step "move to the match body"
+      (combobulate-navigate-down)
+      (expected-node-type "number"))
+      ;; question: what will be the most intuitive way to navigate the siblings of OR partterns? my thoughts will be that we use the cursor position to determine if to go to the next match case or to go to the OR siblings
+     (combobulate-step "move to the next match case"
+      (combobulate-navigate-down)
+      (expected-node-type "value_pattern"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-nested-modules-datastructures-linear-queue ()
+  "Test navigation inside DataStructures.Linear.Queue."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "module Queue = struct")
+     (back-to-indentation)
+     (combobulate-step "be on module"
+      (expected-node-type "module"))
+     (combobulate-step "move to the body"
+       (combobulate-navigate-down)
+       (expected-node-type "type"))
+     (combobulate-step "move to 'a"
+       (combobulate-navigate-down)
+       (expected-node-type "type_variable"))
+      (combobulate-step "move to t"
+       (combobulate-navigate-down)
+       (expected-node-type "type_constructor"))
+      (combobulate-step "move to {"
+       (combobulate-navigate-down)
+       (expected-node-type "{"))
+      (combobulate-step "move to front"
+       (combobulate-navigate-down)
+       (expected-node-type "field_name"))
+      (combobulate-step "move to the sibling: back"
+       (combobulate-navigate-next)
+       (expected-node-type "field_name"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-nested-modules-datastructures-linear-queue-2 ()
+  "Test navigation inside DataStructures.Linear.Queue."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "module Queue = struct")
+     (back-to-indentation)
+     (combobulate-step "be on module"
+      (expected-node-type "module"))
+     (combobulate-step "move to the body"
+       (combobulate-navigate-down)
+       (expected-node-type "type"))
+     (combobulate-step "move to 'a"
+       (combobulate-navigate-down)
+       (expected-node-type "type_variable"))
+      (combobulate-step "move to t"
+       (combobulate-navigate-down)
+       (expected-node-type "type_constructor"))
+      (combobulate-step "move to {"
+       (combobulate-navigate-down)
+       (expected-node-type "{"))
+      (combobulate-step "move to front"
+       (combobulate-navigate-down)
+       (expected-node-type "field_name"))
+      (combobulate-step "move to the sibling: back"
+       (combobulate-navigate-next)
+       (expected-node-type "field_name"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-nested-modules-datastructures-linear-queue-3 ()
+  "Test navigation inside DataStructures.Linear.Queue."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "module Queue = struct")
+     (back-to-indentation)
+     (re-search-forward "front")
+     (back-to-indentation)
+     (combobulate-step "be on front"
+      (expected-node-type "field_name"))
+     (combobulate-step "navigate to the body of front"
+      (combobulate-navigate-down)
+      (expected-node-type "type_variable"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-nested-modules-datastructures-linear-queue-4 ()
+  "Test navigation inside DataStructures.Linear.Queue."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "module Queue = struct")
+     (back-to-indentation)
+     (re-search-forward "let empty = {")
+     (back-to-indentation)
+     (combobulate-step "be on let"
+      (expected-node-type "let"))
+     (combobulate-step "move to empty"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+     (combobulate-step "move to the body: {"
+      (combobulate-navigate-down)
+      (expected-node-type "{"))
+     (combobulate-step "move to front"
+      (combobulate-navigate-down)
+      (expected-node-type "field_name"))
+     (combobulate-step "move to the child of front"
+      (combobulate-navigate-down)
+      (expected-node-type "["))
+     (combobulate-step "move back to front"
+      (combobulate-navigate-up)
+      (expected-node-type "field_name"))
+     (combobulate-step "move to the sibling of front: back"
+      (combobulate-navigate-next)
+      (expected-node-type "field_name"))
+     )))
+
+
+(ert-deftest combobulate-test-ocaml-implementation-nested-modules-datastructures-linear-queue-5 ()
+  "Test navigation inside DataStructures.Linear.Queue."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "module Queue = struct")
+     (back-to-indentation)
+     (re-search-forward "let enqueue x q =")
+     (back-to-indentation)
+     (combobulate-step "be on let"
+      (expected-node-type "let"))
+     (combobulate-step "move to enqueue"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+     (combobulate-step "move to parameter x"
+      (combobulate-navigate-down)
+      (expected-node-type "value_pattern"))
+     (combobulate-step "move to parameter y"
+      (combobulate-navigate-next)
+      (expected-node-type "value_pattern"))
+     (combobulate-step "move to the body of enqueue"
+      (combobulate-navigate-next)
+      (expected-node-type "{"))
+     (combobulate-step "move to q"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+     (combobulate-step "move to back"
+      (combobulate-navigate-next)
+      (expected-node-type "field_name"))
+     (combobulate-step "move to the body: x"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name"))
+     (combobulate-step "move to the sibling q.back"
+      (combobulate-navigate-next)
+      (expected-node-type "value_name"))
+     (combobulate-step "move to back"
+      (combobulate-navigate-next)
+      (expected-node-type "field_name"))
+      ;; we should use sibling navigation to go back to q but this doesnt work and works when navigating as though it's a parent
+     (combobulate-step "move to back to q in q.back"
+      (combobulate-navigate-previous)
+      (expected-node-type "value_name"))
+      ;; we should also use sibling navigation to go back to x but this doesnt work either but will work if we do it as though it's a parent
+     (combobulate-step "move to back to x"
+      (combobulate-navigate-previous)
+      (expected-node-type "value_name"))
+     )))
+
+(ert-deftest combobulate-test-ocaml-implementation-nested-modules-datastructures-associative-hashmap ()
+  "Test navigation inside DataStructures.Associative.HashMap."
+  :tags '(ocaml implementation navigation combobulate)
+  (skip-unless (treesit-language-available-p 'ocaml))
+  (with-tuareg-buffer
+   (lambda ()
+     (goto-char (point-min))
+     (re-search-forward "module HashMap = struct")
+     (back-to-indentation)
+     (combobulate-step "be on module"
+      (expected-node-type "module"))
+     (combobulate-step "move to type"
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
+      (expected-node-type "type"))
+      ;; we should make combobulate skip parantheses whenever possible
+     (combobulate-step "move to ('k, 'v)"
+      (combobulate-navigate-down)
+      (expected-node-type "("))
+     (combobulate-step "move to 'k"
+      (combobulate-navigate-down)
+      (expected-node-type "type_variable"))
+     (combobulate-step "move to 'v"
+      (combobulate-navigate-next)
+      (expected-node-type "type_variable"))
+  )))
+  
 (provide 'test-ocaml-implementation-navigation)
 ;;; test-ocaml-implementation-navigation.el ends here

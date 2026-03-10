@@ -40,7 +40,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --tag)
-            SELECTOR="(tag $2)"
+            SELECTOR="(quote (tag $2))"
             shift 2
             ;;
         --verbose)

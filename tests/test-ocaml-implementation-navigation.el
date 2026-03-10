@@ -579,7 +579,7 @@ matching for OCaml can be resolved."
       "C-M-n should go to the method color"
       (combobulate-navigate-next)
       (expected-node-type "method")
-      (forward-word 3)
+      (forward-word 2)
       (expected-thing-at-point "color"))
 
      (combobulate-step

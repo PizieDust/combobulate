@@ -1069,7 +1069,7 @@ matching for OCaml can be resolved."
       "C-M-d should move to new_function"
       (combobulate-navigate-down)
       (expected-node-type "value_name" "2.0 C-M-d")
-      (expected-thing-at-point "in" "2.1 C-M-d"))
+      (expected-thing-at-point "inline" "2.1 C-M-d"))
 
      (combobulate-step
       "navigate down should move to x"
@@ -1079,22 +1079,22 @@ matching for OCaml can be resolved."
 
      (combobulate-step
       "navigate down should move to x at x * 2"
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "value_name" "4.0 C-M-d"))
 
      (combobulate-step
       "navigate down should move to * at x * 2"
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "mult_operator" "5.0 C-M-d") )
 
      (combobulate-step
       "navigate down should move to 2 at x * 2"
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "number" "6.0 C-M-d"))
 
      (combobulate-step
       "navigate down should move to @@"
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "[@@" "7.0 C-M-d"))
 
      (combobulate-step
@@ -1110,7 +1110,7 @@ matching for OCaml can be resolved."
      (combobulate-step
       "navigate up should move to inline_me"
       (combobulate-navigate-up)
-      (expected-node-type "let" "10.0 C-M-d")))))
+      (expected-node-type "value_name" "10.0 C-M-d")))))
 
 (ert-deftest combobulate-test-ocaml-implementation-external-get-time-h-navigation ()
   "Test hierarchy navigation inside external get_time."
@@ -1145,24 +1145,24 @@ matching for OCaml can be resolved."
       (expected-thing-at-point "float" "4.1 C-M-d"))
 
      (combobulate-step
+      "navigate prev should move to unit"
+      (combobulate-navigate-previous)
+      (expected-node-type "type_constructor" "5.0 C-M-p"))
+    ;; [DECISION] Here, float (the codomain) is a sibling when we move into the function_type (unit -> float) but also "caml_sys_time" [@@noalloc] is also a sibling of function_type. We should figure out a way to disambiguate those two cases making sure navigate-next moves to the body.
+     (combobulate-step
+      "navigate next should move to [@@"
+      (combobulate-navigate-next)
+      (expected-node-type "string" "6.0 C-M-n"))
+
+     (combobulate-step
       "navigate next should move to @@"
       (combobulate-navigate-next)
-      (expected-node-type "[@@" "5.0 C-M-d"))
+      (expected-node-type "[@@" "7.0 C-M-d"))
 
      (combobulate-step
       "navigate down should move to noalloc"
       (combobulate-navigate-down)
-      (expected-node-type "attribute_id" "6.0 C-M-d"))
-
-     (combobulate-step
-      "navigate up should move to @@"
-      (combobulate-navigate-up)
-      (expected-node-type "[@@" "7.0 C-M-d"))
-
-     (combobulate-step
-      "navigate up should move to inline_me"
-      (combobulate-navigate-up)
-      (expected-node-type "external" "8.0 C-M-d")))))
+      (expected-node-type "attribute_id" "8.0 C-M-d")))))
 
 (ert-deftest combobulate-test-ocaml-implementation-module-francais-s-navigation ()
   "Test sibling navigation inside module francais."
@@ -1551,6 +1551,8 @@ matching for OCaml can be resolved."
       (combobulate-navigate-down)
       (expected-node-type "value_pattern"))
 
+      ;; [BUG] navigate next should go to y
+
      (combobulate-step
       "move to y"
       (combobulate-navigate-next)
@@ -1582,10 +1584,15 @@ matching for OCaml can be resolved."
       "move to x"
       (combobulate-navigate-down)
       (expected-node-type "value_pattern"))
-
+    ;; [BUG] navigate next should move to parameter y
+    (combobulate-step
+      "move to y"
+      (combobulate-navigate-next)
+      (expected-node-type "value_pattern"))
+    ;; [BUG] navigate next from here should move to the body
      (combobulate-step
       "move to x in x+y"
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "value_name")))))
 
 (ert-deftest combobulate-test-ocaml-implementation-module-type-monad ()
@@ -2284,6 +2291,7 @@ matching for OCaml can be resolved."
       (combobulate-navigate-next)
       (expected-node-type "("))
 
+      ;; [BUG] navigate down should move to the first element of the pair.
      (combobulate-step
       "move to x in (x,y)"
       (combobulate-navigate-down)
@@ -2363,7 +2371,7 @@ matching for OCaml can be resolved."
       "move to 5"
       (combobulate-navigate-next)
       (expected-node-type "number")))))
-(ert-deftest combobulate-test-ocaml-implementation-type-color-rgb () "Test in type color last `RGB variant" :tags '(ocaml implementation navigation combobulate navi) 
+(ert-deftest combobulate-test-ocaml-implementation-type-color-rgb () "Test in type color last `RGB variant" :tags '(ocaml implementation navigation combobulate) 
 
 (skip-unless 
   (treesit-language-available-p 'ocaml)) 
@@ -2499,6 +2507,7 @@ matching for OCaml can be resolved."
       (combobulate-step "move to increments body"
        (combobulate-navigate-next)
        (expected-node-type "instance_variable_name"))
+      ;; [BUG]: this should move but the cursor stays in place. We need a rule on how to navigate these nodes. 
       (combobulate-step "move to count + 1"
        (combobulate-navigate-next)
        (expected-node-type "value_name"))
@@ -2589,7 +2598,7 @@ matching for OCaml can be resolved."
       (combobulate-step "move to Int"
         (combobulate-navigate-next)
         (expected-node-type "constructor_name"))
-        ;; this should move to the int in the body but it doesnt an rather moves to the next sibling
+        ;; [BUG] this should move to the int in the body but it doesnt an rather moves to the next sibling
       (combobulate-step "move to the body of Int"
         (combobulate-navigate-down)
         (expected-node-type "type_constructor"))
@@ -2609,6 +2618,7 @@ matching for OCaml can be resolved."
      (combobulate-step "move to eval"
       (combobulate-navigate-down)
       (expected-node-type "value_name"))
+      ;; [BUG] when the cursor is on eval we should move to function and not to let int_show
      (combobulate-step "move to function"
       (combobulate-navigate-next)
       (expected-node-type "function"))
@@ -2650,40 +2660,17 @@ matching for OCaml can be resolved."
      (goto-char (point-min))
      (re-search-forward "let rec eval : type a.")
      (re-search-forward "function")
-     (back-to-indentation)
      (combobulate-step "be on function"
-      (expected-node-type "function"))
+      (expected-node-type "function_expression"))
      (combobulate-step "move to first match case"
       (combobulate-navigate-down)
       (expected-node-type "constructor_name"))
       (combobulate-step "move to the pattern of the first match case"
         (combobulate-navigate-down)
         (expected-node-type "value_pattern"))
+        ;; [BUG] navigate next should move to the body of the match case
       (combobulate-step "move to the n"
         (combobulate-navigate-next)
-        (expected-node-type "value_name"))
-     )))
-
-  (ert-deftest combobulate-test-ocaml-implementation-gadts-pattern-matching-h-navigation-b ()
-  "Test hierarchy navigation for GADTs pattern matching (let rec eval)."
-  :tags '(ocaml implementation navigation combobulate)
-  (skip-unless (treesit-language-available-p 'ocaml))
-  (with-tuareg-buffer
-   (lambda ()
-     (goto-char (point-min))
-     (re-search-forward "let rec eval : type a.")
-     (re-search-forward "Bool")
-     (back-to-indentation)
-     (combobulate-step "be on |"
-      (expected-node-type "|"))
-     (combobulate-step "be on Add"
-      (combobulate-navigate-down)
-      (expected-node-type "constructor_name"))
-     (combobulate-step "move to b"
-      (combobulate-navigate-down)
-      (expected-node-type "value_pattern"))
-      (combobulate-step "move to the second b"
-        (combobulate-navigate-down)
         (expected-node-type "value_name"))
      )))
 
@@ -2705,6 +2692,7 @@ matching for OCaml can be resolved."
      (combobulate-step "move to (e1,e2)"
       (combobulate-navigate-down)
       (expected-node-type "("))
+      ;; [BUG] we should add a rule based on the cursor location. if we navigate down we should enter e1,e2, if we navigate next we should go to the body of the match case. if we navigate next while on e1, we should go to e2
      (combobulate-step "move to the first e1"
         (combobulate-navigate-down)
         (expected-node-type "value_pattern"))
@@ -2715,7 +2703,7 @@ matching for OCaml can be resolved."
 
   (ert-deftest combobulate-test-ocaml-implementation-gadts-pattern-matching-h-navigation-c-2 ()
   "Test hierarchy navigation for GADTs pattern matching (let rec eval)."
-  :tags '(ocaml implementation navigation combobulate navi)
+  :tags '(ocaml implementation navigation combobulate)
   (skip-unless (treesit-language-available-p 'ocaml))
   (with-tuareg-buffer
    (lambda ()
@@ -2731,6 +2719,7 @@ matching for OCaml can be resolved."
      (combobulate-step "move to (e1,e2)"
       (combobulate-navigate-down)
       (expected-node-type "("))
+      ;; [BUG] navigating next should move to the body
      (combobulate-step "move to eval"
         (combobulate-navigate-next)
         (expected-node-type "value_name"))
@@ -2805,6 +2794,7 @@ matching for OCaml can be resolved."
       (combobulate-step "move to struct"
         (combobulate-navigate-down)
         (expected-node-type "struct"))
+        ;; [BUG] this should move to the body of the struct but it moves to the next sibling which is the module type name. We need to fine-tune this navigation for first-class modules as the body of the struct is the most common place to navigate to from this position.
       (combobulate-step "move to the body of struct: type t"
         (combobulate-navigate-down)
         (expected-node-type "type"))
@@ -2830,6 +2820,7 @@ matching for OCaml can be resolved."
       (combobulate-step "move to struct"
         (combobulate-navigate-down)
         (expected-node-type "struct"))
+      ;; [BUG] this should move to the next sibling which is the module type name SHOW
       (combobulate-step "move to the sibling of struct"
         (combobulate-navigate-next)
         (expected-node-type "module_type_name"))

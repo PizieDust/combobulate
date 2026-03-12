@@ -10,7 +10,7 @@ type basic_color = [ `Red | `Green | `Blue ]
 type extended_color = [ basic_color | `Yellow | `Orange ]
 
 (* Open polymorphic variant *)
-let color_to_string : [> `Red | `Green | `Blue ] -> string = function
+let color_to_stering : [> `Red | `Green | `Blue ] -> string = function
   | `Red -> "red"
   | `Green -> "green"
   | `Blue -> "blue"

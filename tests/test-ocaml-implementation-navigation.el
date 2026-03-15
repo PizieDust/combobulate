@@ -2916,11 +2916,17 @@ matching for OCaml can be resolved."
       (combobulate-navigate-next)
       (combobulate-navigate-next)
       (expected-node-type "match" "4"))
-      ;; We should go to the parameters but for now, we go to the body of the match
+      ;; [DECISION] should we go to the parameters or body? for now i will try to expect the paramenter
+     (combobulate-step "move to the parameter n"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name" "5"))
+      (combobulate-step "move to the parameter lst"
+      (combobulate-navigate-next)
+      (expected-node-type "value_name" "5"))
      (combobulate-step "move to the match body"
       (combobulate-navigate-down)
       (expected-node-type "number" "5"))
-      ;; question: what will be the most intuitive way to navigate the siblings of OR partterns? my thoughts will be that we use the cursor position to determine if to go to the next match case or to go to the OR siblings
+      ;; [DECISION] what will be the most intuitive way to navigate the siblings of OR partterns? my thoughts will be that we use the cursor position to determine if to go to the next match case or to go to the OR siblings
      (combobulate-step "move to the next match case"
       (combobulate-navigate-down)
       (expected-node-type "value_pattern" "6"))
@@ -2970,6 +2976,8 @@ matching for OCaml can be resolved."
       (expected-node-type "module" "1"))
      (combobulate-step "move to the body"
        (combobulate-navigate-down)
+       (combobulate-navigate-down)
+       (combobulate-navigate-down)
        (expected-node-type "type" "2"))
      (combobulate-step "move to 'a"
        (combobulate-navigate-down)
@@ -3001,6 +3009,7 @@ matching for OCaml can be resolved."
      (back-to-indentation)
      (combobulate-step "be on front"
       (expected-node-type "field_name" "1"))
+      ;; [BUG] this should navigate to the type variable 'a
      (combobulate-step "navigate to the body of front"
       (combobulate-navigate-down)
       (expected-node-type "type_variable" "2"))
@@ -3008,7 +3017,7 @@ matching for OCaml can be resolved."
 
 (ert-deftest combobulate-test-ocaml-implementation-nested-modules-datastructures-linear-queue-4 ()
   "Test navigation inside DataStructures.Linear.Queue."
-  :tags '(ocaml implementation navigation combobulate navi)
+  :tags '(ocaml implementation navigation combobulate)
   (skip-unless (treesit-language-available-p 'ocaml))
   (with-tuareg-buffer
    (lambda ()
@@ -3105,6 +3114,7 @@ matching for OCaml can be resolved."
      (combobulate-step "move to type"
       (combobulate-navigate-down)
       (combobulate-navigate-down)
+      (combobulate-navigate-down)
       (expected-node-type "type" "2"))
       ;; we should make combobulate skip parantheses whenever possible
      (combobulate-step "move to ('k, 'v)"
@@ -3113,6 +3123,7 @@ matching for OCaml can be resolved."
      (combobulate-step "move to 'k"
       (combobulate-navigate-down)
       (expected-node-type "type_variable" "4"))
+      ;; [BUG] navigate next should move to 'v instead of the next let
      (combobulate-step "move to 'v"
       (combobulate-navigate-next)
       (expected-node-type "type_variable" "5"))

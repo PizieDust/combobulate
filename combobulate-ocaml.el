@@ -220,7 +220,7 @@
 
          (:activation-nodes
           ((:nodes (
-            "variant_declaration" "record_declaration") :nodes ((rule "function_type"))))
+            "variant_declaration" "record_declaration" "list_expression") :nodes ((rule "function_type"))))
           :selector (:choose node :match-children t))
 
           (:activation-nodes
@@ -315,7 +315,7 @@
 
         (:activation-nodes
           (
-            (:nodes ("signature" "structure" "module_name" "module_path") :has-ancestor ("module_definition" "module_type_definition"))
+            (:nodes ("signature" "structure" "module_name" "module_path") :has-ancestor ("module_definition" "module_type_definition" "package_expression"))
             (:nodes (
             (rule "module_definition")
             (rule "attribute_payload")

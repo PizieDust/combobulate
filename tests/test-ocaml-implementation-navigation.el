@@ -1753,14 +1753,11 @@ matching for OCaml can be resolved."
       (combobulate-navigate-down)
       (expected-node-type "sig" "3"))
 
-     (search-forward "val")
-     (back-to-indentation)
-
-     (search-forward "val")
-     (back-to-indentation)
-
      (combobulate-step
       "move to val bind in the body"
+      (combobulate-navigate-down)
+      (combobulate-navigate-next)
+      (combobulate-navigate-next)
       (expected-node-type "val" "4"))
 
      (combobulate-step
@@ -1778,9 +1775,10 @@ matching for OCaml can be resolved."
       (combobulate-navigate-down)
       (expected-node-type "type_constructor" "7"))
 
+      ;; [BUG] combobulate next should go to the next segment of this value signature
      (combobulate-step
       "move to ("
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "(" "8"))
 
      (combobulate-step
@@ -2102,7 +2100,7 @@ matching for OCaml can be resolved."
 
 (ert-deftest combobulate-test-ocaml-implementation-module-math ()
   "Test in module Math."
-  :tags '(ocaml implementation navigation combobulate)
+  :tags '(ocaml implementation navigation combobulate navi)
 
   (skip-unless
    (treesit-language-available-p 'ocaml))
@@ -2131,9 +2129,6 @@ matching for OCaml can be resolved."
       "move to let"
       (combobulate-navigate-down)
       (expected-node-type "let" "4"))
-
-     (search-forward "let all")
-     (back-to-indentation)
 
      (combobulate-step
       "be on let all"

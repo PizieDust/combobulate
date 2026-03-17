@@ -172,9 +172,9 @@ let show_value (type a) (module S : SHOW with type t = a) (x : a) =
 (* ========== Original Module Examples ========== *)
 
 (* Simple module with signature *)
-module Positive : sig           (* TODO sibling navigation goes to next module Math, should go to struct *)
+module Positive : sig
   type t = private int
-  val make : int -> t           (* TODO sibling navigation goes to next module Math, should go to val to_int  *)
+  val make : int -> t
   val to_int : t -> int
   val add : t -> t -> t
 end = struct

@@ -2100,7 +2100,7 @@ matching for OCaml can be resolved."
 
 (ert-deftest combobulate-test-ocaml-implementation-module-math ()
   "Test in module Math."
-  :tags '(ocaml implementation navigation combobulate navi)
+  :tags '(ocaml implementation navigation combobulate)
 
   (skip-unless
    (treesit-language-available-p 'ocaml))
@@ -2791,7 +2791,6 @@ matching for OCaml can be resolved."
       (combobulate-step "move to struct"
         (combobulate-navigate-down)
         (expected-node-type "struct" "4"))
-        ;; [BUG] this should move to the body of the struct but it moves to the next sibling which is the module type name. We need to fine-tune this navigation for first-class modules as the body of the struct is the most common place to navigate to from this position.
       (combobulate-step "move to the body of struct: type t"
         (combobulate-navigate-down)
         (expected-node-type "type" "5"))
@@ -2817,7 +2816,6 @@ matching for OCaml can be resolved."
       (combobulate-step "move to struct"
         (combobulate-navigate-down)
         (expected-node-type "struct" "4"))
-      ;; [BUG] this should move to the next sibling which is the module type name SHOW
       (combobulate-step "move to the sibling of struct"
         (combobulate-navigate-next)
         (expected-node-type "module_type_name" "5"))

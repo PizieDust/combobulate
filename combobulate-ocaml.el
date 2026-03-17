@@ -229,7 +229,8 @@
           :selector (:choose node :match-siblings t))
 
           (:activation-nodes
-          ((:nodes (
+          ((:nodes ("signature" "structure" "module_name" "module_path" "module_type_constraint") :has-ancestor ("module_definition" "module_type_definition" "package_expression"))
+          (:nodes (
             "attribute" "field_declaration" "function_expression"
             (rule "function_type")
             (rule "attribute_payload")

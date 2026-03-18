@@ -1761,7 +1761,7 @@ matching for OCaml can be resolved."
       (expected-node-type "val" "4"))
 
      (combobulate-step
-      "move to return"
+      "move to bind"
       (combobulate-navigate-down)
       (expected-node-type "value_name" "5"))
 
@@ -1774,8 +1774,7 @@ matching for OCaml can be resolved."
       "move to t"
       (combobulate-navigate-down)
       (expected-node-type "type_constructor" "7"))
-
-      ;; [BUG] combobulate next should go to the next segment of this value signature
+      ;; [DECISION] should combobulate next should go to the next segment of this value signature or should navigate function types as parent-child relationships
      (combobulate-step
       "move to ("
       (combobulate-navigate-next)
@@ -2415,7 +2414,6 @@ matching for OCaml can be resolved."
       (combobulate-navigate-down) 
       (expected-node-type "number" "3.1")
       (expected-symbol-at-point "1" "3.2")) 
-      ;; [BUG] navigate next should move to the next element in the list but it does not. The expected node type is correct but the cursor moves to the next let statement
     (combobulate-step "move to second element in the list: 2" 
       (combobulate-navigate-next) 
       (expected-node-type "number" "4.1")
@@ -2879,7 +2877,7 @@ matching for OCaml can be resolved."
       (combobulate-navigate-next)
       (combobulate-navigate-next)
       (expected-node-type "match" "4"))
-      ;; Tricky point, to move to the body should take us to the match cases, but then how do we move to the parameters of the match statement. the next step should fail as this doesnt go to the parameters
+      ;; [DECISION] Tricky point, to move to the body should take us to the match cases, but then how do we move to the parameters of the match statement. the next step should fail as this doesnt go to the parameters
      (combobulate-step "move to the match parameters"
       (combobulate-navigate-down)
       (expected-node-type "value_name" "5"))
@@ -2937,6 +2935,8 @@ matching for OCaml can be resolved."
      (combobulate-step "be on module"
       (expected-node-type "module" "1"))
      (combobulate-step "move to the body"
+       (combobulate-navigate-down)
+       (combobulate-navigate-down)
        (combobulate-navigate-down)
        (expected-node-type "type" "2"))
      (combobulate-step "move to 'a"
@@ -3002,7 +3002,6 @@ matching for OCaml can be resolved."
      (back-to-indentation)
      (combobulate-step "be on front"
       (expected-node-type "field_name" "1"))
-      ;; [BUG] this should navigate to the type variable 'a
      (combobulate-step "navigate to the body of front"
       (combobulate-navigate-down)
       (expected-node-type "type_variable" "2"))
@@ -3036,7 +3035,6 @@ matching for OCaml can be resolved."
      (combobulate-step "move back to front"
       (combobulate-navigate-up)
       (expected-node-type "field_name" "6"))
-      ;; [BUG] this should navigate to the sibling back
      (combobulate-step "move to the sibling of front: back"
       (combobulate-navigate-next)
       (expected-node-type "field_name" "7"))
@@ -3080,14 +3078,13 @@ matching for OCaml can be resolved."
      (combobulate-step "move to the sibling q.back"
       (combobulate-navigate-next)
       (expected-node-type "value_name" "9"))
-      ;; [DECISION] Treesitter places q and back as siblings. but intuitively someone may want to navigate to back as a child of q since it's accessed through q. 
+      ;; [DECISION] Treesitter places q and back as siblings. but intuitively someone may want to navigate to back as a child of q since it's accessed through q. for now, both sibling and hierarchy will work.
      (combobulate-step "move to back"
       (combobulate-navigate-down)
       (expected-node-type "field_name" "10"))
      (combobulate-step "move to back to q in q.back"
       (combobulate-navigate-up)
       (expected-node-type "value_name" "11"))
-      ;; [BUG] we should also use sibling navigation to go back to x but this doesnt work either but will work if we do it as though it's a parent
      (combobulate-step "move to back to x"
       (combobulate-navigate-previous)
       (expected-node-type "value_name" "12"))
@@ -3116,7 +3113,6 @@ matching for OCaml can be resolved."
      (combobulate-step "move to 'k"
       (combobulate-navigate-down)
       (expected-node-type "type_variable" "4"))
-      ;; [BUG] navigate next should move to 'v instead of the next let
      (combobulate-step "move to 'v"
       (combobulate-navigate-next)
       (expected-node-type "type_variable" "5"))

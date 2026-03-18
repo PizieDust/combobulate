@@ -189,16 +189,9 @@
          ;; ask Combobulate to give you all the node types that can appear in it:
 
          (:activation-nodes
-          ((:nodes ("tag_specification")))
-          :selector
-          (:choose node
-          :match-siblings t))
-
-         (:activation-nodes
-          ((:nodes ("match_case")))
-          :selector
-          (:choose node
-          :match-siblings (:discard-rules ("value_path"))))
+          ((:nodes (
+            "variant_declaration" "record_declaration" "list_expression" "cons_expression" "field_get_expression" "function_type")))
+          :selector (:choose node :match-children t))
 
          (:activation-nodes
           ((:nodes ("value_definition" "application_expression" "let_expression")
@@ -208,25 +201,12 @@
           :match-children t))
 
           (:activation-nodes
-          ((:nodes ("parameter" "value_path" "add_operator" "mult_operator" "pow_operator" "rel_oparator" "concat_oparator" "or_oparator" "and_operator" "assign_operator" "infix_expression" "type_constructor_path" "field_declaration")))
+          ((:nodes ("type_variable" "parameter" "value_path" "add_operator" "mult_operator" "pow_operator" "rel_oparator" "concat_oparator" "or_oparator" "and_operator" "assign_operator" "infix_expression" "type_constructor_path" "field_declaration" "tag_specification" "match_case" "field_expression"))
+          (:nodes ((rule "signature") (rule "structure")) 
+            :has-ancestor ("module_definition")))
           :selector
           (:choose node
           :match-siblings t))
-
-         (:activation-nodes
-          ((:nodes ((rule "signature") (rule "structure")) 
-            :has-ancestor ("module_definition")))
-          :selector (:choose node :match-siblings t))
-
-         (:activation-nodes
-          ((:nodes (
-            "variant_declaration" "record_declaration" "list_expression") :nodes ((rule "function_type"))))
-          :selector (:choose node :match-children t))
-
-          (:activation-nodes
-          ((:nodes (
-            "signature" "structure" "module_name") :has-ancestor ("module_definition")))
-          :selector (:choose node :match-siblings t))
 
           (:activation-nodes
           ((:nodes ("signature" "structure" "module_name" "module_path" "module_type_constraint") :has-ancestor ("module_definition" "module_type_definition" "package_expression"))
@@ -234,6 +214,7 @@
             "attribute" "field_declaration" "function_expression"
             (rule "function_type")
             (rule "attribute_payload")
+            (rule "record_expression")
             (rule "object_expression")
             (rule "constructor_declaration")
             (rule "class_binding")
@@ -298,7 +279,7 @@
         ;; Navigate from class_definition through its children
 
         (:activation-nodes
-         ((:nodes ((rule "polymorphic_variant_type"))))
+         ((:nodes ("field_get_expression"))(:nodes ((rule "polymorphic_variant_type"))))
          :selector (:choose node
                             :match-children t))
 
@@ -319,6 +300,7 @@
             (:nodes ("signature" "structure" "module_name" "module_path") :has-ancestor ("module_definition" "module_type_definition" "package_expression"))
             (:nodes (
             (rule "module_definition")
+            (rule "record_declaration")
             (rule "attribute_payload")
             (rule "function_type")
             (irule "function_type")

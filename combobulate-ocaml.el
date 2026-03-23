@@ -44,15 +44,18 @@
 
 (require 'combobulate-rules) 
 
-(defmacro combobulate-step (name &rest body) "Wrap BODY as a test step named NAME. If failure occurs, the step name is included in the failure report." (declare (indent 1)) `(condition-case err (progn ,@body) 
-  (ert-test-failed 
-    (signal (car err) 
-      (append (cdr err) (list :step ,name)))))) 
-
 (defgroup combobulate-ocaml nil "Configuration switches for OCaml" :group 'combobulate :prefix "combobulate-ocaml-") 
 
-(defun combobulate-ocaml-pretty-print-node-name (node default-name) "Pretty printer for OCaml nodes" ; TODO Fill this in
- default-name) 
+(defun combobulate-ocaml-pretty-print-node-name (node default-name)
+  "Pretty printer for OCaml nodes."
+  (combobulate-string-truncate
+   (replace-regexp-in-string
+    (rx (| (>= 2 " ") "\n")) " "
+    (let ((name (combobulate-ocaml-imenu-name-function node)))
+      (if (not (string= name "Anonymous"))
+          name
+        default-name)))
+   40))
 
 (defun combobulate-ocaml-imenu-node-p (node) "Return t if NODE is a valid imenu node for OCaml." 
   (member 
@@ -254,12 +257,12 @@
   (:activation-nodes 
     (
       (:nodes 
-        ("value_definition" "value_pattern" "application_expression" "let_expression") :has-parent ("let_expression"))) :selector 
+        ("value_definition" "value_pattern" "let_expression") :has-parent ("let_expression"))) :selector 
     (:choose parent :match-children t)) 
   (:activation-nodes 
     (
       (:nodes 
-        ("type_variable" "parameter" "value_path" "add_operator" "mult_operator" "pow_operator" "rel_oparator" "concat_oparator" "or_oparator" "and_operator" "assign_operator" "infix_expression" "type_constructor_path" "field_declaration" "tag_specification" "match_case" "field_expression" "application_expression")) 
+        ("type_variable" "parameter" "value_path" "add_operator" "mult_operator" "pow_operator" "rel_operator" "concat_operator" "or_operator" "and_operator" "assign_operator" "infix_expression" "type_constructor_path" "field_declaration" "tag_specification" "match_case" "field_expression" "application_expression")) 
       (:nodes 
         ((rule "signature") (rule "structure")) :has-ancestor ("module_definition"))) :selector 
     (:choose node :match-siblings t)) 
@@ -362,7 +365,7 @@
   (:activation-nodes 
     (
       (:nodes 
-        ("field_get_expression" "value_path" "paranthesized_operator"))
+        ("field_get_expression" "value_path" "paranthesized_operator" "application_expression"))
       (:nodes 
         (
           (rule "polymorphic_variant_type")))) :selector 

@@ -187,6 +187,7 @@ end
 (* Module for mathematical operations *)
 module Math = struct            (* TODO hierarchy navigation should skip visiting struct and go directly
                                         to let/type bindings *)
+  let all x = x * x + x - x / x
   let square x = x * x
   let cube x = x * x * x
   let double x = x + x

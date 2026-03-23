@@ -44,6 +44,11 @@
 
 (require 'combobulate-rules) 
 
+(defmacro combobulate-step (name &rest body) "Wrap BODY as a test step named NAME. If failure occurs, the step name is included in the failure report." (declare (indent 1)) `(condition-case err (progn ,@body) 
+  (ert-test-failed 
+    (signal (car err) 
+      (append (cdr err) (list :step ,name)))))) 
+
 (defgroup combobulate-ocaml nil "Configuration switches for OCaml" :group 'combobulate :prefix "combobulate-ocaml-") 
 
 (defun combobulate-ocaml-pretty-print-node-name (node default-name)
@@ -252,6 +257,11 @@
   (:activation-nodes 
     (
       (:nodes 
+        ( "match_case"))) :selector 
+    (:choose node :match-siblings t)) 
+  (:activation-nodes 
+    (
+      (:nodes 
         ( "variant_declaration" "record_declaration" "list_expression" "cons_expression" "field_get_expression" "function_type" "tuple_pattern"))) :selector 
     (:choose node :match-children t)) 
   (:activation-nodes 
@@ -365,7 +375,7 @@
   (:activation-nodes 
     (
       (:nodes 
-        ("field_get_expression" "value_path" "paranthesized_operator" "application_expression"))
+        ("field_get_expression" "value_path" "paranthesized_operator" "application_expression" "constructor_declaration" "parameter"))
       (:nodes 
         (
           (rule "polymorphic_variant_type")))) :selector 

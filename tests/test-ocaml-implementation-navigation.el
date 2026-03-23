@@ -266,7 +266,7 @@ matching for OCaml can be resolved."
      (combobulate-step
       "Go to the start of the function"
       (goto-char (point-min))
-      (re-search-forward "^let color_to_string")
+      (re-search-forward "let color_to_string")
       (beginning-of-line))
 
      (combobulate-step
@@ -339,9 +339,8 @@ matching for OCaml can be resolved."
 
      (combobulate-step
       "C-M-d should move to the match case"
-      (combobulate-navigate-down)
-                                        ; TODO: Fix that case
-      (expected-node-type "match_case" "6.1")
+      (combobulate-navigate-logical-next)
+      (expected-node-type "tag" "6.1")
       (expected-sexp-at-point '`Red "6.2")))))
 
 (ert-deftest combobulate-test-ocaml-implementation-class-s-navigation ()
@@ -910,31 +909,27 @@ matching for OCaml can be resolved."
       "C-M-d should move to x"
       (combobulate-navigate-down)
       (expected-node-type "value_pattern" "4.1")
-      (expected-thing-at-point "x" "4.2") ; C-M-d should move to y
+      (expected-thing-at-point "x" "4.2") ; C-M-d should move to x
 
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "value_pattern" "4.3")
-      (expected-thing-at-point "y" "4.4") ; C-M-d should move to x at x + y
+      (expected-thing-at-point "y" "4.4") ; C-M-n should move to y 
 
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "value_name" "4.5")
-      (expected-thing-at-point "x" "4.6") ; C-M-d should move to + at x + y
+      (expected-thing-at-point "x" "4.6") ; C-M-n should move to x at x + y
 
-      (combobulate-navigate-down)
-      (expected-node-type "add_operator" "4.7") ; C-M-d should move to y at x + y
+      (combobulate-navigate-logical-next)
+      (expected-node-type "add_operator" "4.7") ; M-e should move to + at x + y
 
-      (combobulate-navigate-down)
-      (expected-node-type "value_name" "4.8") ; C-M-u should move to + at x + y
-
-      (combobulate-navigate-up)
-      (expected-node-type "add_operator" "4.9") ; C-M-u should move to x at x + y
+      (combobulate-navigate-logical-next)
+      (expected-node-type "value_name" "4.8") ; M-e should move to y at x + y
 
       (combobulate-navigate-up)
-      (expected-node-type "value_name" "4.10") ; C-M-u should move to add
+      (expected-node-type "value_name" "4.9") ; C-M-u should move to x at x + y
 
       (combobulate-navigate-up)
-      (expected-node-type "value_name" "4.11")
-      (expected-thing-at-point "add" "4.12"))
+      (expected-node-type "value_name" "4.10")) ; C-M-u should move to add
 
      (combobulate-step
       "C-M-u should move to let"
@@ -1300,18 +1295,18 @@ matching for OCaml can be resolved."
 
      (combobulate-step
       "C-M-n should move to Warning"
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "constructor_name" "5.1")
       (expected-thing-at-point "Warning" "5.2") )
 
      (combobulate-step
       "C-M-n should move to Error (but for now goes to attribute)"
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "[@" "6") )
 
      (combobulate-step
       "C-M-n should move to Error"
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "constructor_name" "7.1")
       (expected-thing-at-point "Error" "7.2")))))
 
@@ -1423,10 +1418,10 @@ matching for OCaml can be resolved."
       "move to make"
       (combobulate-navigate-down)
       (expected-node-type "value_name" "4"))
-
+;; [DECISION] here how do we move to the argument? for now use logical-next
      (combobulate-step
       "move to 5"
-      (combobulate-navigate-down)
+      (combobulate-navigate-logical-next)
       (expected-node-type "number" "5")))))
 
 (ert-deftest combobulate-test-ocaml-implementation-let-p1-p2 ()
@@ -1527,7 +1522,7 @@ matching for OCaml can be resolved."
 
 (ert-deftest combobulate-test-ocaml-implementation-let-add-func ()
   "Test sibling navigation between the params of functions."
-  :tags '(ocaml implementation navigation combobulate)
+  :tags '(ocaml implementation navigation combobulate navi)
 
   (skip-unless
    (treesit-language-available-p 'ocaml))
@@ -2150,42 +2145,42 @@ matching for OCaml can be resolved."
 
      (combobulate-step
       "move to *"
-      (combobulate-navigate-next)
+      (combobulate-navigate-logical-next)
       (expected-node-type "mult_operator" "9"))
 
      (combobulate-step
       "move to the next x"
-      (combobulate-navigate-next)
+       (combobulate-navigate-logical-next)
       (expected-node-type "value_name" "10"))
 
      (combobulate-step
       "move to +"
-      (combobulate-navigate-next)
+       (combobulate-navigate-logical-next)
       (expected-node-type "add_operator" "11"))
 
      (combobulate-step
       "move to the next x"
-      (combobulate-navigate-next)
+       (combobulate-navigate-logical-next)
       (expected-node-type "value_name" "12"))
 
      (combobulate-step
       "move to -"
-      (combobulate-navigate-next)
+       (combobulate-navigate-logical-next)
       (expected-node-type "add_operator" "13"))
 
      (combobulate-step
       "move to the next x"
-      (combobulate-navigate-next)
+       (combobulate-navigate-logical-next)
       (expected-node-type "value_name" "14"))
 
      (combobulate-step
       "move to /"
-      (combobulate-navigate-next)
+       (combobulate-navigate-logical-next)
       (expected-node-type "mult_operator" "15"))
 
      (combobulate-step
       "move to the last x"
-      (combobulate-navigate-next)
+      (combobulate-navigate-logical-next)
       (expected-node-type "value_name" "16")))))
 
 (ert-deftest combobulate-test-ocaml-implementation-module-compose ()
@@ -2286,10 +2281,10 @@ matching for OCaml can be resolved."
       (combobulate-navigate-next)
       (expected-node-type "(" "4"))
 
-      ;; [BUG] navigate down should move to the first element of the pair.
+      ;; [BUG] navigate down should move to the first element of the pair, but this element has a parent paranthesized_pattern, which is a child node of parameter. so for this case, we can't use navigate down and we should use logical next
      (combobulate-step
       "move to x in (x,y)"
-      (combobulate-navigate-down)
+      (combobulate-navigate-logical-next)
       (expected-node-type "value_pattern" "5")))))
 
 (ert-deftest combobulate-test-ocaml-implementation-let-add ()
@@ -2869,7 +2864,7 @@ matching for OCaml can be resolved."
       (combobulate-navigate-down)
       (combobulate-navigate-down)
       (expected-node-type "let" "2"))
-     (combobulate-step "move to the body of let rect take"
+     (combobulate-step "move to the body of let rec take"
       (combobulate-navigate-down)
       (expected-node-type "value_name" "3"))
      (combobulate-step "move to the match statement"
@@ -2877,9 +2872,9 @@ matching for OCaml can be resolved."
       (combobulate-navigate-next)
       (combobulate-navigate-next)
       (expected-node-type "match" "4"))
-      ;; [DECISION] Tricky point, to move to the body should take us to the match cases, but then how do we move to the parameters of the match statement. the next step should fail as this doesnt go to the parameters
+      ;; [DECISION] Tricky point, to move to the body should take us to the match cases, but then how do we move to the parameters of the match statement. For now, we will use the logical-next
      (combobulate-step "move to the match parameters"
-      (combobulate-navigate-down)
+      (combobulate-navigate-logical-next)
       (expected-node-type "value_name" "5"))
      )))
   
@@ -2899,7 +2894,7 @@ matching for OCaml can be resolved."
       (combobulate-navigate-down)
       (combobulate-navigate-down)
       (expected-node-type "let" "2"))
-     (combobulate-step "move to the body of let rect take"
+     (combobulate-step "move to the body of let rec take"
       (combobulate-navigate-down)
       (expected-node-type "value_name" "3"))
      (combobulate-step "move to the match statement"
@@ -2907,19 +2902,19 @@ matching for OCaml can be resolved."
       (combobulate-navigate-next)
       (combobulate-navigate-next)
       (expected-node-type "match" "4"))
-      ;; [DECISION] should we go to the parameters or body? for now i will try to expect the paramenter
+      ;; [DECISION] should we go to the parameters or body? for now i will try to expect the parameter using logical-next
      (combobulate-step "move to the parameter n"
-      (combobulate-navigate-down)
+      (combobulate-navigate-logical-next)
       (expected-node-type "value_name" "5"))
       (combobulate-step "move to the parameter lst"
       (combobulate-navigate-next)
       (expected-node-type "value_name" "5"))
      (combobulate-step "move to the match body"
-      (combobulate-navigate-down)
+      (combobulate-navigate-logical-next)
       (expected-node-type "number" "5"))
       ;; [DECISION] what will be the most intuitive way to navigate the siblings of OR partterns? my thoughts will be that we use the cursor position to determine if to go to the next match case or to go to the OR siblings
      (combobulate-step "move to the next match case"
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "value_pattern" "6"))
      )))
 
@@ -3078,9 +3073,9 @@ matching for OCaml can be resolved."
      (combobulate-step "move to the sibling q.back"
       (combobulate-navigate-next)
       (expected-node-type "value_name" "9"))
-      ;; [DECISION] Treesitter places q and back as siblings. but intuitively someone may want to navigate to back as a child of q since it's accessed through q. for now, both sibling and hierarchy will work.
+      ;; [DECISION] Treesitter places q and back as siblings. but intuitively someone may want to navigate to back as a child of q since it's accessed through q. for now, sibling navigation can work by default.
      (combobulate-step "move to back"
-      (combobulate-navigate-down)
+      (combobulate-navigate-next)
       (expected-node-type "field_name" "10"))
      (combobulate-step "move to back to q in q.back"
       (combobulate-navigate-up)

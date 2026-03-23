@@ -10,7 +10,7 @@ type basic_color = [ `Red | `Green | `Blue ]
 type extended_color = [ basic_color | `Yellow | `Orange ]
 
 (* Open polymorphic variant *)
-let color_to_stering : [> `Red | `Green | `Blue ] -> string = function
+let color_to_string : [> `Red | `Green | `Blue ] -> string = function
   | `Red -> "red"
   | `Green -> "green"
   | `Blue -> "blue"
@@ -289,7 +289,7 @@ module Collections = struct
     module Ops = struct
       let rec take n lst =
         match n, lst with
-        | 0, _ | _, [] -> []    (* TODO Sibling navigation between match_case doesn't go to next or previous here. *)
+        | 0, _ | _, [] -> []
         | n, x :: xs -> x :: take (n - 1) xs
 
       let rec drop n lst =

@@ -254,15 +254,20 @@
  
 ;; ask Combobulate to give you all the node types that can appear in it:
  
+ (:activation-nodes 
+    (
+      (:nodes 
+        ( "constructor_pattern" ))) :selector 
+    (:choose parent :match-siblings t)) 
   (:activation-nodes 
     (
       (:nodes 
-        ( "match_case"))) :selector 
+        ( "match_case" ))) :selector 
     (:choose node :match-siblings t)) 
   (:activation-nodes 
     (
       (:nodes 
-        ( "variant_declaration" "record_declaration" "list_expression" "cons_expression" "field_get_expression" "function_type" "tuple_pattern"))) :selector 
+        ( "variant_declaration" "record_declaration" "list_expression" "cons_expression" "field_get_expression" "function_type" "tuple_pattern" "value_pattern"))) :selector 
     (:choose node :match-children t)) 
   (:activation-nodes 
     (

@@ -1,4 +1,4 @@
-(* -*- combobulate-test-point-overlays: ((1 outline 264) (2 outline 272) (3 outline 280)); eval: (combobulate-test-fixture-mode t); -*- *)
+(* -*- combobulate-test-point-overlays: ((1 outline 232)); eval: (combobulate-test-fixture-mode t); -*- *)
 module StringOps = struct
   let uppercase s u = String.uppercase_ascii s
   let lowercase s = String.lowercase_ascii s
@@ -8,4 +8,4 @@ module StringOps = struct
   let concat_with sep strs = String.concat sep strs
 end
 
-(* hierarchy navigation from argument s should go to the let binding. *)
+(* hierarchy navigation from let. *)

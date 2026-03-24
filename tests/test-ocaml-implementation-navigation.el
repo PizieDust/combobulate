@@ -1522,7 +1522,7 @@ matching for OCaml can be resolved."
 
 (ert-deftest combobulate-test-ocaml-implementation-let-add-func ()
   "Test sibling navigation between the params of functions."
-  :tags '(ocaml implementation navigation combobulate navi)
+  :tags '(ocaml implementation navigation combobulate)
 
   (skip-unless
    (treesit-language-available-p 'ocaml))
@@ -2497,9 +2497,9 @@ matching for OCaml can be resolved."
       (combobulate-step "move to increments body"
        (combobulate-navigate-next)
        (expected-node-type "instance_variable_name" "7"))
-      ;; [BUG]: this should move but the cursor stays in place. We need a rule on how to navigate these nodes. 
+      ;; [DECISION]: this should move but the cursor stays in place. We need a rule on how to navigate these nodes. infix expressions go with logical-next
       (combobulate-step "move to count + 1"
-       (combobulate-navigate-next)
+       (combobulate-navigate-logical-next)
        (expected-node-type "value_name" "8"))
      )))
 
@@ -2658,15 +2658,15 @@ matching for OCaml can be resolved."
       (combobulate-step "move to the pattern of the first match case"
         (combobulate-navigate-down)
         (expected-node-type "value_pattern" "3"))
-        ;; [BUG] navigate next should move to the body of the match case
+        ;; [DECISION] navigate logical-next should move to the body of the match case
       (combobulate-step "move to the n"
-        (combobulate-navigate-next)
+        (combobulate-navigate-logical-next)
         (expected-node-type "value_name" "4"))
      )))
 
   (ert-deftest combobulate-test-ocaml-implementation-gadts-pattern-matching-h-navigation-c ()
   "Test hierarchy navigation for GADTs pattern matching (let rec eval)."
-  :tags '(ocaml implementation navigation combobulate)
+  :tags '(ocaml implementation navigation combobulate navi)
   (skip-unless (treesit-language-available-p 'ocaml))
   (with-tuareg-buffer
    (lambda ()
@@ -2682,12 +2682,12 @@ matching for OCaml can be resolved."
      (combobulate-step "move to (e1,e2)"
       (combobulate-navigate-down)
       (expected-node-type "(" "3"))
-      ;; [BUG] we should add a rule based on the cursor location. if we navigate down we should enter e1,e2, if we navigate next we should go to the body of the match case. if we navigate next while on e1, we should go to e2
+      ;; [DECISION] the parents make it imporssible to navigate it as a parent-child. logical-next is prefered
      (combobulate-step "move to the first e1"
-        (combobulate-navigate-down)
+        (combobulate-navigate-logical-next)
         (expected-node-type "value_pattern" "4"))
      (combobulate-step "move to the first e2"
-        (combobulate-navigate-down)
+        (combobulate-navigate-next)
         (expected-node-type "constructor_pattern" "5"))
      )))
 

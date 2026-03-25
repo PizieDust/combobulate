@@ -260,6 +260,38 @@
           :selector (:choose node :match-children t))))
 
       (procedures-hierarchy
+
+       ;; NOTE: Known limitation regarding navigation within class
+       ;; hierarchies.
+       ;; Navigation will go through:
+       ;;   class
+       ;;    → class_definition
+       ;;    → class_binding
+       ;;    → class_name
+       ;;    → parameter
+       ;;    → parameter
+       ;;    → object_expression
+       ;; But we want:
+       ;;   class
+       ;;    → class_name
+       ;;    → object
+       ;;    → instance_variable_definition
+       ;; This appears to be either:
+       ;;   1. A limitation in how combobulate processes selector
+       ;;      rules for certain grammars
+       ;;   2. An issue specific to the OCaml tree-sitter grammar structure
+       ;;   3. A bug in the combobulate procedure matching logic
+
+       ;; Pretty printing rules for `class_binding' gives us:
+       ;; - :*unnamed*: ("abstract_type" "item_attribute"
+       ;;                "parameter" "class_function_type" "type_variable")
+       ;; - :body: ("class_function" "let_open_class_expression"
+       ;;            "let_class_expression" "class_application")
+       ;; - :name ("class_name")
+
+       ;; the object expression does not appear in these rules which is probably
+       ;; part of the problem.
+
        '((:activation-nodes
           ((:nodes ("field_get_expression"
                     "value_path"
@@ -278,12 +310,16 @@
           :selector (:choose node :match-children
                              (:discard-rules ("tag_specification"))))
 
+         ;; Specific rules for converting from a constructor
+         ;; (of a Sum type) to its type
          (:activation-nodes
           ((:nodes ("constructor_name")
                    :has-parent ("constructor_declaration")))
           :selector (:choose parent :match-children
                              (:nodes ("type_constructor_path"))))
 
+         ;; Specific rules for converting from a constructor
+         ;; (of a Sum type) to its type
          (:activation-nodes
           ((:nodes ("type_constructor_path")))
           :selector (:choose node :match-children
@@ -297,6 +333,9 @@
                    :has-ancestor ("module_definition"
                                   "module_type_definition"
                                   "package_expression"))
+
+           ;; We remove class_application, class_binding and object_expression
+           ;; to avoid conflict (See the rules above)
            (:nodes ((rule "module_definition")
                     (rule "record_declaration")
                     (rule "attribute_payload")
@@ -314,6 +353,7 @@
                     (rule "_structure_item"))))
           :selector (:choose node :match-children t))
 
+         ;; This should be equivalent to listing everything in "compilation_unit"
          (:activation-nodes
           ((:nodes (rule "compilation_unit")))
           :selector (:choose node :match-children t))))))
@@ -332,6 +372,8 @@
       (pretty-print-node-name-function #'combobulate-ocaml-pretty-print-node-name)
       (plausible-separators '(";" ",", "|"))
 
+      ;; Interface files only have specifications, not definitions
+      ;; This is why declaration and type_specs are discared.
       (procedures-defun
        '((:activation-nodes
           ((:nodes ("type_definition"
@@ -354,7 +396,12 @@
           :selector (:choose node :match-children t))
 
          (:activation-nodes
-          ((:nodes ((rule "_signature_item")
+          ((:nodes (
+                    ;; Top-level interface items - using rule to get
+                    ;; all _signature_item types
+                    (rule "_signature_item")
+
+                    ;; Regular nodes
                     "attribute"
                     "field_declaration"
                     (rule "attribute_payload")
@@ -372,21 +419,28 @@
           :selector (:choose node :match-children t)) ))
 
       (procedures-hierarchy
-       '((:activation-nodes
+       '(
+
+         ;; From module_name, navigate up to parent then to signature
+         (:activation-nodes
           ((:nodes ("module_name")))
           :selector (:choose parent :match-children
                              (:match-rules ("signature"))))
 
+         ;; From sig keyword, navigate to sibling signature items
+         ;; (type_definition, value_specification, etc.)
          (:activation-nodes
           ((:nodes ("sig")))
           :selector (:choose node :match-siblings
                              (:match-rules ((rule "_signature_item")))))
 
+         ;; From method keyword, navigate to parent then to method_name
          (:activation-nodes
           ((:nodes ("method")))
           :selector (:choose parent :match-children
                              (:match-rules ("method_name"))))
 
+         ;; For signature and other structural nodes, match their children
          (:activation-nodes
           ((:nodes ((rule "attribute_payload")
                     (rule "object_expression")
@@ -403,6 +457,14 @@
          (:activation-nodes
           ((:nodes (rule "compilation_unit")))
           :selector (:choose node :match-children t)))))))
+
+;; NOTE: OCaml has two tree-sitter grammars: 'ocaml' for .ml files and
+;; 'ocaml_interface' for .mli files.
+;; We register both as separate "languages" in Combobulate terms with their own
+;; rule sets. Interface files (.mli) have a more restricted set of top-level
+;; constructs (specifications rather than implementations).
+;; The `:language' parameter matches what tree-sitter uses,
+;; while the :name is used for Emacs Lisp symbol names.
 
 (define-combobulate-language
  :name ocaml
@@ -422,6 +484,9 @@
   "Setup function for OCaml mode with Combobulate."
   ;; Configure imenu for OCaml files
   (setq-local
+
+   ;; Use tree-sitter based imenu (treesit-simple-imenu creates the index
+   ;; from the settings above)
    treesit-simple-imenu-settings
    `(("Type" "type_definition" nil combobulate-ocaml-imenu-name-function)
      ("Module" "module_definition" nil combobulate-ocaml-imenu-name-function)

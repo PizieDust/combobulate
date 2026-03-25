@@ -178,6 +178,11 @@
           :selector (:choose node :match-siblings t))
 
          (:activation-nodes
+          ((:nodes ("parameter")
+                   :has-parent ("let_binding")))
+          :selector (:choose node :match-siblings t))
+
+         (:activation-nodes
           ((:nodes ("variant_declaration"
                     "record_declaration"
                     "list_expression"
@@ -272,6 +277,17 @@
                     (rule "class_binding"))))
           :selector (:choose node :match-children
                              (:discard-rules ("tag_specification"))))
+
+         (:activation-nodes
+          ((:nodes ("constructor_name")
+                   :has-parent ("constructor_declaration")))
+          :selector (:choose parent :match-children
+                             (:nodes ("type_constructor_path"))))
+
+         (:activation-nodes
+          ((:nodes ("type_constructor_path")))
+          :selector (:choose node :match-children
+                             (:nodes ("type_constructor"))))
 
          (:activation-nodes
           ((:nodes ("signature"

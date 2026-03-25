@@ -31,6 +31,11 @@
 
 ;;; Helpers
 
+(defmacro combobulate-step (name &rest body) "Wrap BODY as a test step named NAME. If failure occurs, the step name is included in the failure report." (declare (indent 1)) `(condition-case err (progn ,@body)
+  (ert-test-failed
+    (signal (car err)
+      (append (cdr err) (list :step ,name))))))
+
 (defun with-tuareg-buffer (callback &optional file)
   "Perform CALLBACK in a temp-buffer (with FILE as a content)."
   (let* ((file (or file "fixtures/imenu/demo.ml"))
@@ -913,7 +918,7 @@ matching for OCaml can be resolved."
 
       (combobulate-navigate-next)
       (expected-node-type "value_pattern" "4.3")
-      (expected-thing-at-point "y" "4.4") ; C-M-n should move to y 
+      (expected-thing-at-point "y" "4.4") ; C-M-n should move to y
 
       (combobulate-navigate-next)
       (expected-node-type "value_name" "4.5")
@@ -1025,7 +1030,7 @@ matching for OCaml can be resolved."
       (combobulate-navigate-down)
       (expected-node-type "value_pattern" "3.1")
       (expected-thing-at-point "x" "3.2"))
-    
+
     ;;
      (combobulate-step
       "navigate next should move to x at x + 1"
@@ -2361,64 +2366,64 @@ matching for OCaml can be resolved."
       "move to 5"
       (combobulate-navigate-next)
       (expected-node-type "number" "4")))))
-(ert-deftest combobulate-test-ocaml-implementation-type-color-rgb () "Test in type color last `RGB variant" :tags '(ocaml implementation navigation combobulate) 
+(ert-deftest combobulate-test-ocaml-implementation-type-color-rgb () "Test in type color last `RGB variant" :tags '(ocaml implementation navigation combobulate)
 
-(skip-unless 
-  (treesit-language-available-p 'ocaml)) 
+(skip-unless
+  (treesit-language-available-p 'ocaml))
 
   ;; This test passes but it is incorrect. The cursor stays on the same int and does not move to the next one. Given they are all same nodes, the expected node type passes but the navigation does not happen.
 
 (with-tuareg-buffer
-   (lambda () 
-    (goto-char (point-min)) 
-    (re-search-forward "type color_2") (beginning-of-line) 
-    (combobulate-step "navigate to RGB variant" 
+   (lambda ()
+    (goto-char (point-min))
+    (re-search-forward "type color_2") (beginning-of-line)
+    (combobulate-step "navigate to RGB variant"
       (search-forward "RGB")
-      (expected-node-type "tag_specification" "1")) 
-    (combobulate-step "jump to first int" 
+      (expected-node-type "tag_specification" "1"))
+    (combobulate-step "jump to first int"
       (combobulate-navigate-down)
-      (expected-node-type "type_constructor" "2")) 
-    (combobulate-step "move to string" 
-      (combobulate-navigate-next) 
+      (expected-node-type "type_constructor" "2"))
+    (combobulate-step "move to string"
+      (combobulate-navigate-next)
       (expected-thing-at-point "string" "3.1")
-      (expected-node-type "type_constructor" "3.2")) 
-    (combobulate-step "move to bool" 
-      (combobulate-navigate-next) 
+      (expected-node-type "type_constructor" "3.2"))
+    (combobulate-step "move to bool"
+      (combobulate-navigate-next)
       (expected-thing-at-point "bool" "4.1")
-      (expected-node-type "type_constructor" "4.2")) 
+      (expected-node-type "type_constructor" "4.2"))
    )))
 
 
 
-(ert-deftest combobulate-test-ocaml-implementation-let-numbers () "Test in let numbers" :tags '(ocaml implementation navigation combobulate) 
+(ert-deftest combobulate-test-ocaml-implementation-let-numbers () "Test in let numbers" :tags '(ocaml implementation navigation combobulate)
 
-(skip-unless 
-  (treesit-language-available-p 'ocaml)) 
+(skip-unless
+  (treesit-language-available-p 'ocaml))
 
 (with-tuareg-buffer
-   (lambda () 
-    (goto-char (point-min)) 
-    (re-search-forward "let numbers") (back-to-indentation) 
-    (combobulate-step "be on let" 
-      (expected-node-type "let" "1")) 
-    (combobulate-step "move to numbers" 
-      (combobulate-navigate-down) 
-      (expected-node-type "value_name" "2")) 
-    (combobulate-step "move to first element in the list: 1" 
-      (combobulate-navigate-down) 
-      (combobulate-navigate-down) 
+   (lambda ()
+    (goto-char (point-min))
+    (re-search-forward "let numbers") (back-to-indentation)
+    (combobulate-step "be on let"
+      (expected-node-type "let" "1"))
+    (combobulate-step "move to numbers"
+      (combobulate-navigate-down)
+      (expected-node-type "value_name" "2"))
+    (combobulate-step "move to first element in the list: 1"
+      (combobulate-navigate-down)
+      (combobulate-navigate-down)
       (expected-node-type "number" "3.1")
-      (expected-symbol-at-point "1" "3.2")) 
-    (combobulate-step "move to second element in the list: 2" 
-      (combobulate-navigate-next) 
+      (expected-symbol-at-point "1" "3.2"))
+    (combobulate-step "move to second element in the list: 2"
+      (combobulate-navigate-next)
       (expected-node-type "number" "4.1")
       (expected-symbol-at-point "2" "4.2"))
-    (combobulate-step "move to third element in the list: 3" 
-      (combobulate-navigate-next) 
+    (combobulate-step "move to third element in the list: 3"
+      (combobulate-navigate-next)
       (expected-node-type "number" "5.1")
       (expected-symbol-at-point "3" "5.2"))
-    (combobulate-step "move back to the second element in the list: 2" 
-      (combobulate-navigate-previous) 
+    (combobulate-step "move back to the second element in the list: 2"
+      (combobulate-navigate-previous)
       (expected-node-type "number" "6.1")
       (expected-symbol-at-point "2" "6.2"))
    )))
@@ -2877,7 +2882,7 @@ matching for OCaml can be resolved."
       (combobulate-navigate-logical-next)
       (expected-node-type "value_name" "5"))
      )))
-  
+
 (ert-deftest combobulate-test-ocaml-implementation-nested-modules-collections-list-ops-3 ()
   "Test hierarchy navigation inside Collections.List.Ops."
   :tags '(ocaml implementation navigation combobulate)

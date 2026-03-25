@@ -59,11 +59,3 @@ docker-build-tests: docker-build
 .PHONY:	docker-run-tests
 docker-run-tests: docker-build
 	$(DOCKER_CMD) run-tests
-
-.PHONY: run-ocaml-tests
-run-ocaml-tests:
-	$(EMACS_CMD) -l ert -l test-ocaml-implementation-navigation.el --eval "(let ((backtrace-on-error-noninteractive nil)) (ert-run-tests-batch-and-exit))"
-
-.PHONY: run-ocaml-tests-compact
-run-ocaml-tests-compact:
-	$(EMACS_CMD) -l compact-reporter.el -l test-ocaml-implementation-navigation.el --eval "(setq debug-on-error t)" --eval "(ert-run-tests-batch t)"

@@ -370,7 +370,17 @@ For many languages it's usually something like `identifier' or
      #'combobulate--pretty-print-node)
     (pretty-print-node-name-function
      "Function that pretty prints a node name."
-     #'combobulate-pretty-print-node-name))
+     #'combobulate-pretty-print-node-name)
+    (navigate-down-into-lists
+     "Whether to navigate into the first list-like structure ahead of point."
+     t)
+    (imenu-settings
+     "Tree-sitter imenu settings for this language."
+     nil)
+    (node-naming-rules
+     "Rules mapping a node type to a tree-sitter query extracting its name.
+Used by `combobulate-imenu-name-function`."
+     nil))
   "Default definitions that each language minor mode can set.
 
 This is a list of `defvar' forms that are used to define the

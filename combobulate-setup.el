@@ -370,7 +370,17 @@ For many languages it's usually something like `identifier' or
      #'combobulate--pretty-print-node)
     (pretty-print-node-name-function
      "Function that pretty prints a node name."
-     #'combobulate-pretty-print-node-name))
+     #'combobulate-pretty-print-node-name)
+    (navigate-down-into-lists
+     "Whether to navigate into the first list-like structure ahead of point."
+     t)
+    (imenu-settings
+     "Tree-sitter imenu settings for this language."
+     nil)
+    (node-naming-rules
+     "Rules mapping a node type to a tree-sitter query extracting its name.
+Used by `combobulate-imenu-name-function`."
+     nil))
   "Default definitions that each language minor mode can set.
 
 This is a list of `defvar' forms that are used to define the
@@ -441,8 +451,37 @@ A complete list of known shorthands are found in
   (setf (combobulate-get 'default-nodes)
         (combobulate-procedure-collect-activation-nodes
          (combobulate-read procedures-default)))
+  (when-let ((imenu-settings (combobulate-read imenu-settings)))
+    (setq-local treesit-simple-imenu-settings imenu-settings)
+    (setq-local imenu-create-index-function #'treesit-simple-imenu))
   (dolist (envelope (combobulate-read envelope-list))
     (apply #'combobulate-define-envelope envelope)))
+
+(defvar-local combobulate-imenu-name--query-cache nil
+  "Cache of compiled tree-sitter queries for imenu node names.")
+
+(defun combobulate-imenu-name-function (node)
+  "Centralized declarative fallback to extract a node's name for imenu.
+Uses `node-naming-rules` to query for the name."
+  (let* ((type (treesit-node-type node))
+         (rules (combobulate-read node-naming-rules))
+         (rule (cdr (assoc type rules))))
+    (if rule
+        (let ((prefix (if (consp rule) (car rule) ""))
+              (query (if (consp rule) (cdr rule) rule)))
+          (if query
+              (let* ((lang (treesit-node-language node))
+                     (compiled-query
+                      (or (cdr (assoc query combobulate-imenu-name--query-cache))
+                          (let ((cq (treesit-query-compile lang query)))
+                            (push (cons query cq) combobulate-imenu-name--query-cache)
+                            cq))))
+                (if-let* ((matched (treesit-query-capture node compiled-query))
+                          (text (treesit-node-text (cdr (car matched)) t)))
+                    (concat prefix text)
+                  (if (string= prefix "") "Anonymous" prefix)))
+            prefix))
+      "Anonymous")))
 
 
 (defun combobulate-get-registered-language (mm)

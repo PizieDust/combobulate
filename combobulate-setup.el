@@ -451,8 +451,37 @@ A complete list of known shorthands are found in
   (setf (combobulate-get 'default-nodes)
         (combobulate-procedure-collect-activation-nodes
          (combobulate-read procedures-default)))
+  (when-let ((imenu-settings (combobulate-read imenu-settings)))
+    (setq-local treesit-simple-imenu-settings imenu-settings)
+    (setq-local imenu-create-index-function #'treesit-simple-imenu))
   (dolist (envelope (combobulate-read envelope-list))
     (apply #'combobulate-define-envelope envelope)))
+
+(defvar-local combobulate-imenu-name--query-cache nil
+  "Cache of compiled tree-sitter queries for imenu node names.")
+
+(defun combobulate-imenu-name-function (node)
+  "Centralized declarative fallback to extract a node's name for imenu.
+Uses `node-naming-rules` to query for the name."
+  (let* ((type (treesit-node-type node))
+         (rules (combobulate-read node-naming-rules))
+         (rule (cdr (assoc type rules))))
+    (if rule
+        (let ((prefix (if (consp rule) (car rule) ""))
+              (query (if (consp rule) (cdr rule) rule)))
+          (if query
+              (let* ((lang (treesit-node-language node))
+                     (compiled-query
+                      (or (cdr (assoc query combobulate-imenu-name--query-cache))
+                          (let ((cq (treesit-query-compile lang query)))
+                            (push (cons query cq) combobulate-imenu-name--query-cache)
+                            cq))))
+                (if-let* ((matched (treesit-query-capture node compiled-query))
+                          (text (treesit-node-text (cdr (car matched)) t)))
+                    (concat prefix text)
+                  (if (string= prefix "") "Anonymous" prefix)))
+            prefix))
+      "Anonymous")))
 
 
 (defun combobulate-get-registered-language (mm)

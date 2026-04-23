@@ -19,8 +19,8 @@
   (when (and tuareg-treesit-bridge-install-missing-grammars
              (not (treesit-language-available-p 'ocaml)))
     (add-to-list 'treesit-language-source-alist
-                 '(ocaml "https://github.com/tree-sitter/tree-sitter-ocaml"
-                         "v0.24.2" "grammars/ocaml/src"))
+                 '(ocaml "https://github.com/PizieDust/oxcaml-test-grammar"
+                         "main" "src"))
     (add-to-list 'treesit-language-source-alist
                  '(ocaml-interface "https://github.com/tree-sitter/tree-sitter-ocaml"
                          "v0.24.2" "grammars/interface/src"))

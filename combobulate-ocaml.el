@@ -302,7 +302,7 @@
                     (rule "_sequence_expression")
                     (rule "_signature_item")
                     (rule "_structure_item"))))
-          :selector (:choose parent :match-siblings t))
+          :selector (:choose node :match-siblings t))
 
          (:activation-nodes
           ((:nodes ((rule "compilation_unit"))))

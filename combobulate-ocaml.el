@@ -211,11 +211,13 @@
 
       (procedures-sibling
        '((:activation-nodes
-          ((:nodes ( "constructor_pattern" )))
+          ((:nodes ( "constructor_pattern"))
+           (:nodes (("type_constructor")) :has-parent ("unboxed_type_constructor_path"))
+          )
           :selector (:choose parent :match-siblings t))
 
          (:activation-nodes
-          ((:nodes ( "match_case" )))
+          ((:nodes ( "match_case" "comprehension_clause" "mode" "mod" "jkind" )))
           :selector (:choose node :match-siblings t))
 
          (:activation-nodes
@@ -231,14 +233,18 @@
                     "field_get_expression"
                     "function_type"
                     "tuple_pattern"
-                    "value_pattern")))
+                    "value_pattern")
+            )
+            (:nodes ((rule "jkind_mod"))))
           :selector (:choose node :match-children t))
 
          (:activation-nodes
           ((:nodes ("value_definition"
                     "value_pattern"
                     "let_expression")
-                   :has-parent ("let_expression")))
+                   :has-parent ("let_expression"))
+            (:nodes ("mod" "mode"))
+            )
           :selector  (:choose parent :match-children t))
 
          (:activation-nodes
@@ -296,7 +302,7 @@
                     (rule "_sequence_expression")
                     (rule "_signature_item")
                     (rule "_structure_item"))))
-          :selector (:choose node :match-siblings t))
+          :selector (:choose parent :match-siblings t))
 
          (:activation-nodes
           ((:nodes ((rule "compilation_unit"))))
@@ -341,7 +347,7 @@
                     "paranthesized_operator"
                     "application_expression"
                     "constructor_declaration"
-                    "parameter"))
+                    "parameter" "at_mode_expr"))
            (:nodes ((rule "polymorphic_variant_type"))))
           :selector (:choose node :match-children t))
 

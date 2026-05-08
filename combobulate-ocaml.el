@@ -217,7 +217,7 @@
           :selector (:choose parent :match-siblings t))
 
          (:activation-nodes
-          ((:nodes ( "match_case" "comprehension_clause" "mode" "mod" "jkind" )))
+          ((:nodes ( "match_case" "mode" "mod" "jkind" "field_get_expression" )))
           :selector (:choose node :match-siblings t))
 
          (:activation-nodes
@@ -227,13 +227,17 @@
 
          (:activation-nodes
           ((:nodes ("variant_declaration"
+                    "comprehension_binding"
                     "record_declaration"
                     "list_expression"
                     "cons_expression"
                     "field_get_expression"
                     "function_type"
                     "tuple_pattern"
-                    "value_pattern")
+                    "value_pattern"
+                    "comprehension"
+                    "tuple_expression"
+                    "application_expression")
             )
             (:nodes ((rule "jkind_mod"))))
           :selector (:choose node :match-children t))
@@ -342,9 +346,11 @@
        ;; part of the problem.
 
        '((:activation-nodes
-          ((:nodes ("field_get_expression"
-                    "value_path"
-                    "paranthesized_operator"
+          ((:nodes (("field_get_expression")
+                    "value_path" "typed_pattern"
+                    "comprehension_iterator"
+                    "parenthesized_operator"
+                    "parenthesized_expression"
                     "application_expression"
                     "constructor_declaration"
                     "parameter" "at_mode_expr"))

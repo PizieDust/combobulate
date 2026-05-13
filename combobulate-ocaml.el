@@ -213,6 +213,10 @@
        '(
 
         (:activation-nodes
+          ((:nodes ("labeled_tuple_element_type" "labeled_tuple_element" "labeled_tuple_element_pattern") :position at))
+          :selector (:choose parent :match-children t))
+
+        (:activation-nodes
           ((:nodes ("external") :has-parent ((irule "external")) :position at))
           :selector (:choose node :match-siblings t))
 
@@ -235,7 +239,7 @@
           :selector (:choose node :match-siblings t))
 
          (:activation-nodes
-          ((:nodes ("parameter")
+          ((:nodes ("parameter") :position at
                    :has-parent ("let_binding")))
           :selector (:choose node :match-siblings t))
 
@@ -381,6 +385,8 @@
                     "comprehension_iterator"
                     "parenthesized_operator"
                     "parenthesized_expression"
+                    "parenthesized_pattern"
+                    "tuple_pattern"
                     "application_expression"
                     "constructor_declaration"
                     "parameter" "at_mode_expr") :position at)

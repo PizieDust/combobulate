@@ -213,20 +213,20 @@
        '(
 
         (:activation-nodes
-          ((:nodes (("external")) :position at))
-          :selector (:choose parent :match-children t))
+          ((:nodes ("external") :has-parent ((irule "external")) :position at))
+          :selector (:choose node :match-siblings t))
 
         (:activation-nodes
-          ((:nodes (("tuple_expression")) :position at))
+          ((:nodes ("tuple_expression") :position at))
           :selector (:choose node :match-children t))
 
         (:activation-nodes
-          ((:nodes (("type_binding")) :has-parent ("type_definition") :position at))
+          ((:nodes ("type_binding") :has-parent ("type_definition") :position at))
           :selector (:choose parent :match-children t))
 
          (:activation-nodes
           ((:nodes ( "constructor_pattern"))
-           (:nodes (("type_constructor")) :has-parent ("unboxed_type_constructor_path"))
+           (:nodes ("type_constructor") :has-parent ("unboxed_type_constructor_path"))
           )
           :selector (:choose parent :match-siblings t))
 

@@ -210,7 +210,21 @@
                     "module_type_definition" "class_definition"))))))
 
       (procedures-sibling
-       '((:activation-nodes
+       '(
+
+        (:activation-nodes
+          ((:nodes (("external")) :position at))
+          :selector (:choose parent :match-children t))
+
+        (:activation-nodes
+          ((:nodes (("tuple_expression")) :position at))
+          :selector (:choose node :match-children t))
+
+        (:activation-nodes
+          ((:nodes (("type_binding")) :has-parent ("type_definition") :position at))
+          :selector (:choose parent :match-children t))
+
+         (:activation-nodes
           ((:nodes ( "constructor_pattern"))
            (:nodes (("type_constructor")) :has-parent ("unboxed_type_constructor_path"))
           )
@@ -237,7 +251,7 @@
                     "value_pattern"
                     "comprehension"
                     "tuple_expression"
-                    "application_expression")
+                    "application_expression") :position in
             )
             (:nodes ((rule "jkind_mod"))))
           :selector (:choose node :match-children t))
@@ -269,11 +283,16 @@
                     "tag_specification"
                     "match_case"
                     "field_expression"
-                    "application_expression"))
+                    "application_expression") :position at)
            (:nodes ((rule "signature")
                     (rule "structure"))
                    :has-ancestor ("module_definition")))
           :selector (:choose node :match-siblings t))
+
+
+        (:activation-nodes
+          ((:nodes (("type_binding")) :has-parent ("type_definition") :position in))
+          :selector (:choose node :match-children t))
 
          (:activation-nodes
           ((:nodes ("signature"
@@ -345,7 +364,13 @@
        ;; the object expression does not appear in these rules which is probably
        ;; part of the problem.
 
-       '((:activation-nodes
+       '(
+        
+        (:activation-nodes ((:nodes ("include_module")))
+        :selector (:choose node :match-children
+                  (:match-rules ((rule "include_module")))))
+        
+        (:activation-nodes
           ((:nodes (("field_get_expression")
                     "value_path" "typed_pattern"
                     "comprehension_iterator"
@@ -353,7 +378,7 @@
                     "parenthesized_expression"
                     "application_expression"
                     "constructor_declaration"
-                    "parameter" "at_mode_expr"))
+                    "parameter" "at_mode_expr") :position at)
            (:nodes ((rule "polymorphic_variant_type"))))
           :selector (:choose node :match-children t))
 
@@ -361,7 +386,7 @@
           ((:nodes ("object_expression"
                     (rule "class_definition")
                     (rule "object_expression")
-                    (rule "class_binding"))))
+                    (rule "class_binding")) :position at))
           :selector (:choose node :match-children
                              (:discard-rules ("tag_specification"))))
 
@@ -379,6 +404,14 @@
           ((:nodes ("type_constructor_path")))
           :selector (:choose node :match-children
                              (:nodes ("type_constructor"))))
+
+        (:activation-nodes ((:nodes ("signature") :position at))
+        :selector (:choose node :match-children
+                    (:match-rules ((rule "signature")))))
+
+        (:activation-nodes ((:nodes ("structure") :position at))
+        :selector (:choose node :match-children
+                    (:match-rules ((rule "structure")))))
 
          (:activation-nodes
           ((:nodes ("signature"

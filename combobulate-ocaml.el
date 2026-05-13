@@ -370,6 +370,17 @@
        ;; part of the problem.
 
        '(
+
+        (:activation-nodes
+        ((:nodes ((rule "_pattern")
+                  "constructor_path"
+                  "value_path"
+                  "value_pattern") :has-parent ("match_case") :position at))
+        :selector (:choose parent :match-children
+                    (:match-rules ((rule "_sequence_expression")
+                                  (rule "_simple_expression")
+                                  "refutation_case"
+                                  "guard"))))
         
         (:activation-nodes ((:nodes ("include_module") :position at))
         :selector (:choose node :match-children

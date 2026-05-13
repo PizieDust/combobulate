@@ -251,6 +251,7 @@
                     "value_pattern"
                     "comprehension"
                     "tuple_expression"
+                    "infix_expression"
                     "application_expression") :position in
             )
             (:nodes ((rule "jkind_mod"))))
@@ -366,12 +367,16 @@
 
        '(
         
-        (:activation-nodes ((:nodes ("include_module")))
+        (:activation-nodes ((:nodes ("include_module") :position at))
         :selector (:choose node :match-children
                   (:match-rules ((rule "include_module")))))
+
+        (:activation-nodes ((:nodes ("attribute") :position at))
+        :selector (:choose node :match-children
+                    (:match-rules ("attribute_payload"))))
         
         (:activation-nodes
-          ((:nodes (("field_get_expression")
+          ((:nodes ("field_get_expression"
                     "value_path" "typed_pattern"
                     "comprehension_iterator"
                     "parenthesized_operator"

@@ -207,23 +207,80 @@
           ((:nodes ("type_definition" "exception_definition" "external"
                     "value_definition" "method_definition"
                     "instance_variable_definition" "module_definition"
-                    "module_type_definition" "class_definition" "while_expression" "for_expression" 
-                    "match_expression" "if_expression"))))))
+                    "module_type_definition" "class_definition"))))))
 
       (procedures-sibling
        '(
 
+         (:activation-nodes
+          ((:nodes ("tuple_expression") :position in))
+          :selector (:choose node :match-siblings t))
+
+         (:activation-nodes
+          ((:nodes ("tuple_expression") :position at))
+          :selector (:choose node :match-children t))
+
+          ;; although the value_paths are siblings, here desired functionality will be to go to the sibling of their parent.
+
+         (:activation-nodes
+          ((:nodes ("comprehension_iterator") :position at
+            :has-parent ("comprehension")))
+          :selector (:choose parent :match-children t))
+
+          ;; it's better to jump to the other bindings that navigate within the binding
+          (:activation-nodes
+          ((:nodes ("comprehension_binding") :position at
+            :has-parent ("comprehension_iterator")))
+          :selector (:choose parent :match-children t))
+
+         (:activation-nodes
+          ((:nodes ("let_binding") :position at :has-parent         ("value_definition"))
+            (:nodes ("value_definition") :position at :has-parent ("let_expression"))
+           (:nodes ("application_expression") :position at :has-parent ("sequence_expression"))
+           (:nodes ("item_attribute") :position at)
+           (:nodes ("infix_expression") :position at :has-parent ("comprehension")))
+          :selector (:choose parent :match-children t)) ;; if match-siblings then we can do previous with navigate-prev if we could indicate which direction a rule should activate in we can solve this problem.
+
+         (:activation-nodes
+          ( (:nodes ("comprehension") :position at)
+            (:nodes ("application_expression" "fun_expression") :position in))
+          :selector (:choose node :match-children t))
+
+         (:activation-nodes
+          ((:nodes ((rule "_type") (rule "_simple_type")) :position at
+            :has-parent ("function_type")))
+          :selector (:choose parent :match-children
+                      (:match-rules ((rule "_type")
+                                    (rule "_simple_type")))))
+
+         (:activation-nodes
+          ((:nodes ("type_variable") :position at
+            :has-parent ("constructed_type")))
+          :selector (:choose parent :match-children t))
+
+         (:activation-nodes
+          ((:nodes ("type_constructor_path") :position at
+            :has-parent ("constructed_type")))
+          :selector (:choose parent :match-siblings t))
+
         (:activation-nodes
-          ((:nodes ("labeled_tuple_element_type" "labeled_tuple_element" "labeled_tuple_element_pattern") :position at))
+          ((:nodes ("then_clause" "else_clause"
+                    "value_path" "value_name" "constructor_path"
+                    (rule "_simple_expression")) :position at
+            :has-parent ("if_expression")))
+          :selector (:choose parent :match-children
+                      (:match-rules ((rule "_sequence_expression")
+                                    (rule "_simple_expression")
+                                    "then_clause"
+                                    "else_clause"))))
+
+        (:activation-nodes
+          ((:nodes ("labeled_tuple_element_type" "labeled_tuple_element" "labeled_tuple_element_pattern" "match_expression") :position at))
           :selector (:choose parent :match-children t))
 
         (:activation-nodes
           ((:nodes ("external") :has-parent ((irule "external")) :position at))
           :selector (:choose node :match-siblings t))
-
-        (:activation-nodes
-          ((:nodes ("tuple_expression") :position at))
-          :selector (:choose node :match-children t))
 
         (:activation-nodes
           ((:nodes ("type_binding") :has-parent ("type_definition") :position at))
@@ -236,7 +293,12 @@
           :selector (:choose parent :match-siblings t))
 
          (:activation-nodes
-          ((:nodes ( "match_case" "mode" "mod" "jkind" "field_get_expression" )))
+          ((:nodes ("match_case") :position at))
+          :selector (:choose node :match-siblings
+                      (:match-rules ("match_case"))))
+
+          (:activation-nodes
+          ((:nodes ("mode" "mod" "jkind" "field_get_expression")))
           :selector (:choose node :match-siblings t))
 
          (:activation-nodes
@@ -265,7 +327,7 @@
          (:activation-nodes
           ((:nodes ("value_definition"
                     "value_pattern"
-                    "let_expression")
+                    "let_expression") :position at
                    :has-parent ("let_expression"))
             (:nodes ("mod" "mode"))
             )
@@ -372,24 +434,83 @@
 
        '(
 
+        ;; DECISION: move to the body of a mtach directly
+        ;; (:activation-nodes ((:nodes ("match_expression") :position at))
+        ;; :selector (:choose node :match-children
+        ;;           (:discard-rules ("value_name" "value_path" "tuple_expression"))))
+
+        ;; DECISION: move down from an if directly to the else
+        ;; (:activation-nodes ((:nodes ("if_expression") :position at))
+        ;; :selector (:choose node :match-children
+        ;;             (:match-rules ("then_clause" "else_clause"))))
+
+        (:activation-nodes ((:nodes ("value_definition") :position at))
+          :selector (:choose node :match-children
+                    (:match-rules ("let_binding" "attribute"))))
+
+        (:activation-nodes ((:nodes ("let_binding" 
+                                     "fun_expression") 
+                             :position at)
+                             (:nodes ("infix_expression") :position at :has-parent ("comprehension")))
+          :selector (:choose node :match-children t))
+
+        (:activation-nodes ((:nodes ("let_expression") :position at))
+          :selector (:choose node :match-children
+                    (:match-rules ("value_definition"
+                                    (rule "_sequence_expression")
+                                    (rule "_simple_expression")))))
+
+        (:activation-nodes ((:nodes ("application_expression") :position at))
+          :selector (:choose node :match-children t))
+
+        ;;  (:activation-nodes ((:nodes ("while_expression" "for_expression") :position at))
+        ;;   :selector (:choose node :match-children
+        ;;             t))
+
+        ;; (:activation-nodes ((:nodes ("do_clause") :position at))
+        ;;   :selector (:choose node :match-children
+        ;;             t))
+
+        ;; (:activation-nodes ((:nodes ("if_expression") :position at))
+        ;;   :selector (:choose node :match-children
+        ;;             t))
+
+        ;; (:activation-nodes ((:nodes ("then_clause" "else_clause") :position at))
+        ;;   :selector (:choose node :match-children
+        ;;             t))
+
         (:activation-nodes
-        ((:nodes ((rule "_pattern")
-                  "constructor_path"
-                  "value_path"
-                  "value_pattern") :has-parent ("match_case") :position at))
-        :selector (:choose parent :match-children
+          ((:nodes ("match_expression" "try_expression" "function_expression") :position at))
+          :selector (:choose node :match-children (:match-rules ("match_case"))))
+
+        (:activation-nodes ((:nodes ("match_case") :position at))
+          :selector (:choose node :match-children
+                    t))
+
+        (:activation-nodes
+          ((:nodes ((rule "_pattern")
+                    "constructor_path"
+                    "value_path"
+                    "value_pattern") :has-parent ("match_case") :position at))
+          :selector (:choose parent :match-children
                     (:match-rules ((rule "_sequence_expression")
-                                  (rule "_simple_expression")
-                                  "refutation_case"
-                                  "guard"))))
-        
+                                    (rule "_simple_expression")
+                                    "refutation_case"
+                                    "guard"))))
+
+        (:activation-nodes ((:nodes ("function_type") :position at))
+          :selector (:choose node :match-children
+                    (:match-rules ((rule "_type")
+                                    (rule "_simple_type")))))
+
         (:activation-nodes ((:nodes ("include_module") :position at))
-        :selector (:choose node :match-children
-                  (:match-rules ((rule "include_module")))))
+          :selector (:choose node :match-children
+                    (:match-rules ((rule "_module_expression")
+                                    (rule "_simple_module_expression")))))
 
         (:activation-nodes ((:nodes ("attribute") :position at))
-        :selector (:choose node :match-children
-                    (:match-rules ("attribute_payload"))))
+          :selector (:choose node :match-children
+                    (:match-rules ("attribute_payload"))))                  
         
         (:activation-nodes
           ((:nodes ("field_get_expression"
@@ -403,7 +524,7 @@
                     "constructor_declaration"
                     "parameter" "at_mode_expr") :position at)
            (:nodes ((rule "polymorphic_variant_type"))))
-          :selector (:choose node :match-children t))
+          :selector (:choose node :match-children (:discard-rules ("|"))))
 
          (:activation-nodes
           ((:nodes ("object_expression"
